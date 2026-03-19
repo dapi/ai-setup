@@ -102,6 +102,9 @@ CLAUDE_PLUGINS_MARKETPLACES = lackeyjb/playwright-skill dapi/claude-code-marketp
 CLAUDE_PLUGINS = \
 	playwright-skill@playwright-skill \
 	pr-review-fix-loop@dapi
+	spec-reviewer@dapi \
+	zellij-workflow@dapi \
+	himalaya@dapi \
 
 agents-claude-plugins:
 	@for mp in $(CLAUDE_PLUGINS_MARKETPLACES); do \
