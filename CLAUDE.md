@@ -27,6 +27,7 @@ No SSR
 React Router in Data mode
 Bun Test Runner for unit tests for BE
 Playwright e2e tests for FE and for the whole application
+Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 
 ## Constraints
 No new dependencies without explicit request
