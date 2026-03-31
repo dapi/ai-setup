@@ -41,18 +41,18 @@ version:
 	fi
 
 check:
-	@VERSION=$(VERSION) ./scripts/test-setup.sh
+	@cd .. && VERSION=$(VERSION) ./scripts/test-setup.sh
 
 extra-check:
-	@CLAUDE_MARKETPLACE_NAMES="$(CLAUDE_MARKETPLACE_NAMES)" \
+	@cd .. && CLAUDE_MARKETPLACE_NAMES="$(CLAUDE_MARKETPLACE_NAMES)" \
 	CLAUDE_EXPECTED_PLUGINS="$(CLAUDE_PLUGINS)" \
 	./scripts/test-extras.sh
 
 check-context:
-	@./scripts/test-context.sh
+	@cd .. && ./scripts/test-context.sh
 
 codex-context:
-	@./scripts/codex-context.sh
+	@cd .. && ./scripts/codex-context.sh
 
 mise-package:
 	@set -e; \
@@ -82,7 +82,7 @@ mise-package:
 
 mise-install: mise-package
 	@echo "Install mise tools"
-	@mise install --quiet
+	@cd .. &&  mise install --quiet
 
 agents-install: agents agents-cli agents-skills
 

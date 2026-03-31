@@ -9,7 +9,9 @@
 Подходит для базовых Linux-дистрибутивов (Ubuntu-tested) и macOS.
 
 ```bash
-make
+cd .ai-setup && make
+# или
+make -C .ai-setup
 ```
 
 По умолчанию `make` запускает target `ai`, который последовательно:
