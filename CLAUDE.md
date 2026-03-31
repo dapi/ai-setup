@@ -1,4 +1,5 @@
 See PROJECT.md for project description.
+See .claude/memory/ for implementation plans and checklists.
 
 ## Stack
 Ruby on Rails 8, PostgreSQL 15, RSpec
@@ -17,3 +18,4 @@ Ruby on Rails 8, PostgreSQL 15, RSpec
 ## Constraints
 - Don't touch existing migrations
 - Don't implement auth
+- Don't read AI-SETUP-README.md (because it's irrelevant)
