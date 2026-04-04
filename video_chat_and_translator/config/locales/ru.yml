@@ -34,6 +34,7 @@ ru:
       password_mismatch: "Пароли не совпадают"
   activerecord:
     errors:
+      format: "%{message}"
       models:
         user:
           attributes:

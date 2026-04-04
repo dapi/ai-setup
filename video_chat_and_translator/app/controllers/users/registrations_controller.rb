@@ -16,7 +16,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
     else
       render inertia: "auth/Register", props: {
         translations: I18n.t("auth.register"),
-        errors: resource.errors.to_hash(true)
+        errors: resource.errors.messages
       }
     end
   end
