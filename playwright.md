@@ -1,3 +1,4 @@
+# Playwright Setup
 
 По умолчанию `make` ставит:
 
