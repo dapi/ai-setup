@@ -158,7 +158,7 @@ done
 
 codex_agents_md_bytes=0
 if [ -f "${HOME}/.codex/AGENTS.md" ]; then
-	codex_agents_md_bytes="$(wc -c < "${HOME}/.codex/AGENTS.md" | tr -d ' ')"
+	codex_agents_md_bytes="$(wc -c <"${HOME}/.codex/AGENTS.md" | tr -d ' ')"
 fi
 
 spawned_agents_json="$(jq -sr '
