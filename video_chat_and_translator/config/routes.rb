@@ -13,7 +13,7 @@ Rails.application.routes.draw do
   # Resend confirmation email (button "Didn't receive email?")
   namespace :users do
     namespace :confirmations do
-      resource :resend, only: [:create]
+      resource :resend, only: [ :create ]
     end
   end
 
