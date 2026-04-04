@@ -77,3 +77,41 @@ jobs:
 
       - name: Run CI smoke checks
         run: ./scripts/test-ci.sh
+
+  app:
+    name: App checks (Docker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Prepare artifact directory
+        run: mkdir -p /tmp/ci-artifacts
+
+      - name: Build Docker image
+        run: docker compose -f docker/docker-compose.ci.yml build web 2>&1 | tee /tmp/ci-artifacts/docker-build-log.txt
+
+      - name: Setup database
+        run: docker compose -f docker/docker-compose.ci.yml run --rm web bin/setup --skip-server
+
+      - name: Run CI checks
+        run: docker compose -f docker/docker-compose.ci.yml run --rm web bin/ci
+
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          docker compose -f docker/docker-compose.ci.yml logs > /tmp/ci-artifacts/docker-compose-runtime-logs.txt 2>&1 || true
+          docker compose -f docker/docker-compose.ci.yml cp web:/app/log/test.log /tmp/ci-artifacts/test.log || true
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.x
+        with:
+          name: ci-failure-logs
+          path: /tmp/ci-artifacts/
+
+      - name: Teardown
+        if: always()
+        run: docker compose -f docker/docker-compose.ci.yml down -v
