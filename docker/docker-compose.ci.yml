@@ -1,0 +1,31 @@
+# Standalone CI compose — NOT an override of docker-compose.yml.
+# Docker Compose v2 merges environment by key and does not clear volumes
+# with `[]`, so a two-file merge cannot achieve proper CI isolation.
+
+name: video-chat-ci
+
+services:
+  web:
+    build:
+      context: ../video_chat_and_translator
+      dockerfile: ../docker/Dockerfile
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/video_chat_and_translator_test
+      - RAILS_ENV=test
+    depends_on:
+      db:
+        condition: service_healthy
+    stdin_open: false
+    tty: false
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: video_chat_and_translator_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

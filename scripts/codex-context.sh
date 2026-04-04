@@ -25,7 +25,7 @@ die() {
 }
 
 bytes_to_tokens() {
-	echo $(( $1 / 4 ))
+	echo $(($1 / 4))
 }
 
 extract_frontmatter() {
@@ -56,18 +56,18 @@ session_file=""
 
 while [ $# -gt 0 ]; do
 	case "$1" in
-		--session)
-			shift
-			[ $# -gt 0 ] || die "--session requires a path"
-			session_file="$1"
-			;;
-		-h|--help)
-			usage
-			exit 0
-			;;
-		*)
-			die "unknown argument: $1"
-			;;
+	--session)
+		shift
+		[ $# -gt 0 ] || die "--session requires a path"
+		session_file="$1"
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		die "unknown argument: $1"
+		;;
 	esac
 	shift
 done
@@ -158,7 +158,7 @@ done
 
 codex_agents_md_bytes=0
 if [ -f "${HOME}/.codex/AGENTS.md" ]; then
-	codex_agents_md_bytes="$(wc -c < "${HOME}/.codex/AGENTS.md" | tr -d ' ')"
+	codex_agents_md_bytes="$(wc -c <"${HOME}/.codex/AGENTS.md" | tr -d ' ')"
 fi
 
 spawned_agents_json="$(jq -sr '

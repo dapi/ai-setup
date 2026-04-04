@@ -174,7 +174,6 @@ check_direnv_port() {
 	return 1
 }
 
-
 section "Shell integration (required)"
 if command_in_path mise; then
 	ok "mise in PATH"

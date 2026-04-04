@@ -1,0 +1,5 @@
+ignores:
+  - ".memory-bank/**"
+  - "homeworks/**"
+  - "own/**"
+  - "node_modules/**"

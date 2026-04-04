@@ -9,10 +9,10 @@
 ## Ports
 
 | Service | Container Port | Host Port |
-|---------|---------------|-----------|
-| Rails   | 3100          | ${PORT:-3100} |
-| Vite    | 3036          | 3036 |
-| PostgreSQL | 5432       | random |
+| --- | --- | --- |
+| Rails | 3100 | ${PORT:-3100} |
+| Vite | 3036 | 3036 |
+| PostgreSQL | 5432 | random |
 
 Note: Host port for Rails is controlled by `$PORT` env variable (set by `port-selector` via `.envrc`).
 
