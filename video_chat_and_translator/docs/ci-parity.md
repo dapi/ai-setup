@@ -6,7 +6,7 @@ This document describes differences between the CI Docker environment and the lo
 
 CI uses a **standalone** compose file, separate from the dev one:
 
-```
+```text
 docker/docker-compose.yml        # dev
 docker/docker-compose.ci.yml     # CI (standalone)
 ```
@@ -22,7 +22,7 @@ A standalone file gives full control over what's in the CI container.
 ## Differences table
 
 | Setting | Dev (`docker-compose.yml`) | CI (`docker-compose.ci.yml`) | Reason |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `RAILS_ENV` | `development` | `test` | Run checks in test environment |
 | `DATABASE_URL` | `…/video_chat_and_translator_development` | `…/video_chat_and_translator_test` | Separate test database |
 | `volumes` | Host mount + bundle/node_modules cache | None (code via `COPY` in image) | No host mount needed in CI |
@@ -36,7 +36,7 @@ A standalone file gives full control over what's in the CI container.
 ## Database
 
 | | Dev | CI |
-|---|---|---|
+| --- | --- | --- |
 | Database name | `video_chat_and_translator_development` | `video_chat_and_translator_test` |
 | User | `postgres` | `postgres` |
 | Password | `postgres` | `postgres` |

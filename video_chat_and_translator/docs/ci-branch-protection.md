@@ -7,7 +7,7 @@ Configure required status checks on `main` so that no PR can be merged unless al
 These names must match the `name:` fields of jobs in `.github/workflows/ci.yml` exactly:
 
 | Job key | Display name (status check name) |
-|---|---|
+| --- | --- |
 | `app` | `App checks (Docker)` |
 | `lint` | `Lint` |
 | `smoke-bootstrap` (ubuntu) | `Smoke (ubuntu-latest)` |

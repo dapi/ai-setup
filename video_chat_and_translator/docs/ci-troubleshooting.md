@@ -7,6 +7,7 @@ See also: [CI Checks](ci-checks.md) | [CI Parity](ci-parity.md)
 **Symptom:** build step fails with `pull access denied`, `connection timed out`, or `no such host`.
 
 **Steps:**
+
 1. Check [Docker Hub status](https://www.dockerstatus.com/) and any corporate mirror/registry.
 2. If transient: **re-run** the workflow in GitHub Actions (Actions → workflow run → Re-run jobs).
 3. If persistent: verify that the GitHub Actions runner has outbound access to the registry.
@@ -17,6 +18,7 @@ See also: [CI Checks](ci-checks.md) | [CI Parity](ci-parity.md)
 **Symptom:** `App checks (Docker)` job fails at the "Build Docker image" step.
 
 **Steps:**
+
 1. Download the `ci-failure-logs` artifact from the workflow run summary.
 2. Open `docker-build-log.txt` — it contains the full `docker compose build` stdout/stderr.
 3. Reproduce locally: `./scripts/ci-app.sh` — the build log is saved to `tmp/ci-artifacts/docker-build-log.txt`.
@@ -26,6 +28,7 @@ See also: [CI Checks](ci-checks.md) | [CI Parity](ci-parity.md)
 **Symptom:** `App checks (Docker)` job fails at the "Run CI checks" step.
 
 **Steps:**
+
 1. Download `ci-failure-logs` artifact and inspect `docker-compose-runtime-logs.txt`.
 2. Reproduce locally: `./scripts/ci-app.sh` — output is printed to stdout.
 3. Fix the reported issues and push again.
@@ -35,6 +38,7 @@ See also: [CI Checks](ci-checks.md) | [CI Parity](ci-parity.md)
 **Symptom:** job fails at the "Setup database" step.
 
 **Steps:**
+
 1. Inspect `docker-compose-runtime-logs.txt` in the `ci-failure-logs` artifact.
 2. Common cause: migration error or schema mismatch. Check recent migrations.
 3. Reproduce locally: `./scripts/ci-app.sh`.

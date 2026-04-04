@@ -5,7 +5,7 @@ Canonical entry point: `bin/ci` (defined in `video_chat_and_translator/bin/ci` +
 ## Required checks
 
 | # | Check | Command |
-|---|---|---|
+| --- | --- | --- |
 | 1 | RuboCop | `bin/rubocop` |
 | 2 | Bundler Audit | `bin/bundler-audit` |
 | 3 | Brakeman | `bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error` |
@@ -22,6 +22,7 @@ Use `scripts/ci-app.sh` to reproduce CI in Docker with full parity:
 ```
 
 This script:
+
 - Builds the Docker image using the same CI compose file as GitHub Actions
 - Runs `bin/setup --skip-server` to prepare the database
 - Runs `bin/ci` for all checks
@@ -30,7 +31,7 @@ This script:
 
 See [`docker/docker-compose.ci.yml`](../../docker/docker-compose.ci.yml) for CI environment configuration.
 
-## Docker build log policy (§8)
+## Docker build log policy
 
 On every CI run, the full `docker compose build` stdout/stderr is captured via `tee` into
 `docker-build-log.txt`. If the build step fails, this file is always available in the
@@ -43,7 +44,7 @@ When the `App checks (Docker)` job fails, GitHub Actions uploads a `ci-failure-l
 **Artifact contents:**
 
 | File | When present | Description |
-|---|---|---|
+| --- | --- | --- |
 | `docker-build-log.txt` | Always (created by `tee` during build step) | Full stdout/stderr of `docker compose build` |
 | `docker-compose-runtime-logs.txt` | On failure after build succeeds | Output of `docker compose logs` |
 | `test.log` | On failure if file exists in container | Rails test log at `log/test.log` |
