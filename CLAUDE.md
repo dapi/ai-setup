@@ -42,6 +42,7 @@ export interface ButtonProps {
 export const Button = ({ color, children }) => <Btn color={color}>{children}</Btn>
 ```
 - All api endpoints starts with `/api`
+- Use Russian for all Brief (`Brief.md`), Spec (`Spec.md`) and Plan (`Plan.md`) documents
 
 ## Project Structure
 - `src` - source code of the application
