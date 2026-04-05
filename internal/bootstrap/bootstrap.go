@@ -10,7 +10,11 @@ import (
 	"strconv"
 	"time"
 
+	postv1connect "feedium/api/post/v1/postv1connect"
 	sourcev1connect "feedium/api/source/v1/sourcev1connect"
+	postsvc "feedium/internal/app/post"
+	postconnect "feedium/internal/app/post/adapters/connect"
+	postpg "feedium/internal/app/post/adapters/postgres"
 	sourcesvc "feedium/internal/app/source"
 	sourceconnect "feedium/internal/app/source/adapters/connect"
 	sourcepg "feedium/internal/app/source/adapters/postgres"
@@ -52,6 +56,12 @@ func Run(ctx context.Context, log *slog.Logger) error {
 	handler := sourceconnect.New(service, log)
 	path, h := sourcev1connect.NewSourceServiceHandler(handler)
 	mux.Handle(path, h)
+
+	postRepo := postpg.New(db)
+	postService := postsvc.NewService(postRepo, log)
+	postHandler := postconnect.New(postService, log)
+	postPath, postH := postv1connect.NewPostServiceHandler(postHandler)
+	mux.Handle(postPath, postH)
 
 	// Step 4: Create HTTP server
 	server := &http.Server{
