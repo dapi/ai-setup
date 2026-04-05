@@ -151,7 +151,7 @@ check_direnv_port() {
 		return 1
 	fi
 
-	if [ ! -f .envrc ]; then
+	if [ ! -f ../.envrc ]; then
 		fail ".envrc present"
 		return 1
 	fi
