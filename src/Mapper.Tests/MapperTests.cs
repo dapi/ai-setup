@@ -82,6 +82,33 @@ public sealed class MapperTests
         Assert.Empty(mapped.Operations);
     }
 
+    [Fact]
+    public void Map_Converts_Value_To_Guid()
+    {
+        var mapper = new global::Mapper.Mapper(new GuidProfile());
+        var patch = CreatePatch<GuidSourceModel>(
+            Operation<GuidSourceModel>("replace", "/Id", value: "11111111-1111-1111-1111-111111111111"));
+
+        var mapped = mapper.Map<GuidSourceModel, GuidTargetModel>(patch);
+
+        var operation = Assert.Single(mapped.Operations);
+        Assert.Equal("/Id", operation.path);
+        Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), operation.value);
+    }
+
+    [Fact]
+    public void Map_Uses_Leaf_Source_Member_For_Computed_MapFrom()
+    {
+        var mapper = new global::Mapper.Mapper(new StringLengthProfile());
+        var patch = CreatePatch<SourceModel>(Operation<SourceModel>("replace", "/Name", value: "Alice"));
+
+        var mapped = mapper.Map<SourceModel, StringLengthTargetModel>(patch);
+
+        var operation = Assert.Single(mapped.Operations);
+        Assert.Equal("/NameLength", operation.path);
+        Assert.Equal(5, operation.value);
+    }
+
     private static JsonPatchDocument<TModel> CreatePatch<TModel>(params Operation<TModel>[] operations)
         where TModel : class
     {
@@ -143,6 +170,23 @@ public sealed class MapperTests
         }
     }
 
+    private sealed class GuidProfile : global::Mapper.MapProfile
+    {
+        public GuidProfile()
+        {
+            CreateMap<GuidSourceModel, GuidTargetModel>();
+        }
+    }
+
+    private sealed class StringLengthProfile : global::Mapper.MapProfile
+    {
+        public StringLengthProfile()
+        {
+            CreateMap<SourceModel, StringLengthTargetModel>()
+                .ForMember(target => target.NameLength, options => options.MapFrom(source => source.Name!.Length));
+        }
+    }
+
     private sealed class SourceModel
     {
         public string? Name { get; set; }
@@ -160,6 +204,21 @@ public sealed class MapperTests
     private sealed class RenamedTargetModel
     {
         public string? DisplayName { get; set; }
+    }
+
+    private sealed class GuidSourceModel
+    {
+        public string? Id { get; set; }
+    }
+
+    private sealed class GuidTargetModel
+    {
+        public Guid Id { get; set; }
+    }
+
+    private sealed class StringLengthTargetModel
+    {
+        public int NameLength { get; set; }
     }
 
     private sealed class SourceStatusModel

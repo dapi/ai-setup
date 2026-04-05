@@ -505,7 +505,7 @@ internal sealed class SingleMemberAccessVisitor : ExpressionVisitor
     protected override Expression VisitMember(MemberExpression node)
     {
         var unwrapped = ExpressionPath.UnwrapConvert(node.Expression);
-        if (DependsOnRoot(unwrapped))
+        if (DependsOnRoot(unwrapped) && !PathLeafTypes.IsSupported(unwrapped.Type))
         {
             var pathSegments = ExpressionPath.GetMemberSegments(node);
             var match = new MemberAccessMatch(node, pathSegments, node.Type);
@@ -646,7 +646,13 @@ internal static class PathLeafTypes
     public static bool IsSupported(Type type)
     {
         var effectiveType = Nullable.GetUnderlyingType(type) ?? type;
-        if (effectiveType == typeof(bool) || effectiveType == typeof(string) || effectiveType.IsEnum)
+        if (effectiveType == typeof(bool) ||
+            effectiveType == typeof(string) ||
+            effectiveType == typeof(Guid) ||
+            effectiveType == typeof(DateTime) ||
+            effectiveType == typeof(DateTimeOffset) ||
+            effectiveType == typeof(TimeSpan) ||
+            effectiveType.IsEnum)
         {
             return true;
         }
