@@ -18,12 +18,12 @@ public sealed class Mapper
             throw new ArgumentNullException(nameof(profiles));
         }
 
-        _compiledMaps = new ConcurrentDictionary<TypePair, ICompiledMap>(
-            profiles
-                .SelectMany(static profile => profile.Definitions)
-                .Select(static definition => new KeyValuePair<TypePair, ICompiledMap>(
-                    new TypePair(definition.SourceType, definition.TargetType),
-                    definition.Compile())));
+        _compiledMaps = new ConcurrentDictionary<TypePair, ICompiledMap>();
+        foreach (var definition in profiles.SelectMany(static profile => profile.Definitions))
+        {
+            var typePair = new TypePair(definition.SourceType, definition.TargetType);
+            _compiledMaps[typePair] = definition.Compile(ResolveCompiledMap);
+        }
     }
 
     public JsonPatchDocument<TTarget> Map<TSource, TTarget>(JsonPatchDocument<TSource> sourcePatch)
@@ -58,22 +58,39 @@ public sealed class Mapper
 
         return targetPatch;
     }
+
+    private ICompiledMap? ResolveCompiledMap(TypePair typePair) =>
+        _compiledMaps.TryGetValue(typePair, out var compiledMap) ? compiledMap : null;
 }
 
 internal interface ICompiledMap
 {
     object? MapOperation(Operation operation);
+
+    PathResolution ResolvePath(string path, string originalPath);
 }
 
 internal sealed class CompiledMap<TSource, TTarget> : ICompiledMap
     where TSource : class
     where TTarget : class
 {
-    private readonly Dictionary<string, MemberRule> _rules;
+    private readonly IReadOnlyDictionary<string, MemberRule> _explicitRules;
+    private readonly IReadOnlyDictionary<string, PropertyMap> _defaultPropertyMaps;
+    private readonly IReadOnlyCollection<string> _ignoredTargetPaths;
+    private readonly Func<TypePair, ICompiledMap?> _compiledMapProvider;
+    private readonly TypePair _typePair;
 
-    public CompiledMap(Dictionary<string, MemberRule> rules)
+    public CompiledMap(
+        IReadOnlyDictionary<string, MemberRule> explicitRules,
+        IReadOnlyDictionary<string, PropertyMap> defaultPropertyMaps,
+        IReadOnlyCollection<string> ignoredTargetPaths,
+        Func<TypePair, ICompiledMap?> compiledMapProvider)
     {
-        _rules = rules;
+        _explicitRules = explicitRules;
+        _defaultPropertyMaps = defaultPropertyMaps;
+        _ignoredTargetPaths = ignoredTargetPaths;
+        _compiledMapProvider = compiledMapProvider;
+        _typePair = new TypePair(typeof(TSource), typeof(TTarget));
     }
 
     public object? MapOperation(Operation operation)
@@ -83,40 +100,170 @@ internal sealed class CompiledMap<TSource, TTarget> : ICompiledMap
             throw new ArgumentNullException(nameof(operation));
         }
 
-        var pathRule = ResolveRule(operation.path);
-        if (pathRule?.Ignored == true)
+        var pathResolution = ResolvePath(operation.path, operation.path);
+        if (pathResolution.Ignored)
         {
             return null;
         }
 
-        var fromRule = string.IsNullOrWhiteSpace(operation.from) ? null : ResolveRule(operation.from);
-        if (fromRule?.Ignored == true)
+        var fromResolution = string.IsNullOrWhiteSpace(operation.from) ? null : ResolvePath(operation.from, operation.from);
+        if (fromResolution?.Ignored == true)
         {
             return null;
         }
 
-        var mapped = new Operation<TTarget>
+        return new Operation<TTarget>
         {
             op = operation.op,
-            path = pathRule?.TargetPath ?? operation.path,
-            from = fromRule?.TargetPath ?? operation.from,
-            value = ConvertValueIfNeeded(operation.op, operation.value, pathRule)
+            path = pathResolution.TargetPath,
+            from = fromResolution?.TargetPath ?? operation.from,
+            value = ConvertValueIfNeeded(operation.op, operation.value, pathResolution)
         };
-
-        return mapped;
     }
 
-    private MemberRule? ResolveRule(string? path)
+    public PathResolution ResolvePath(string path, string originalPath)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        var segments = JsonPointer.ValidateAndSplit(path);
+        return ResolveSegments(segments, path, originalPath);
+    }
+
+    private PathResolution ResolveSegments(IReadOnlyList<string> segments, string relativePath, string originalPath)
+    {
+        if (TryResolveExplicitRule(segments, out var explicitRule, out var consumedSegments))
         {
-            return null;
+            if (IsIgnored(explicitRule.TargetPath))
+            {
+                return PathResolution.CreateIgnored(originalPath, explicitRule.TargetPath, explicitRule.SourceType, explicitRule.TargetType);
+            }
+
+            if (consumedSegments == segments.Count)
+            {
+                EnsureLeafSupported(explicitRule.TargetType, originalPath);
+                return PathResolution.Resolved(
+                    originalPath,
+                    explicitRule.TargetPath,
+                    explicitRule.Convert,
+                    explicitRule.SourceType,
+                    explicitRule.TargetType);
+            }
+
+            return ResolveNested(
+                explicitRule.TargetPath,
+                explicitRule.SourceType,
+                explicitRule.TargetType,
+                segments.Skip(consumedSegments).ToArray(),
+                originalPath);
         }
 
-        return _rules.TryGetValue(path, out var directRule) ? directRule : null;
+        var segment = segments[0];
+        if (!_defaultPropertyMaps.TryGetValue(segment, out var propertyMap))
+        {
+            throw CreatePathResolutionException(originalPath, $"Source path '{originalPath}' could not be resolved.");
+        }
+
+        if (IsIgnored(propertyMap.TargetPath))
+        {
+            return PathResolution.CreateIgnored(originalPath, propertyMap.TargetPath, propertyMap.SourceType, propertyMap.TargetType);
+        }
+
+        if (segments.Count == 1)
+        {
+            EnsureLeafSupported(propertyMap.TargetType, originalPath);
+            return PathResolution.Resolved(
+                originalPath,
+                propertyMap.TargetPath,
+                propertyMap.Convert,
+                propertyMap.SourceType,
+                propertyMap.TargetType);
+        }
+
+        return ResolveNested(
+            propertyMap.TargetPath,
+            propertyMap.SourceType,
+            propertyMap.TargetType,
+            segments.Skip(1).ToArray(),
+            originalPath);
     }
 
-    private static object? ConvertValueIfNeeded(string op, object? value, MemberRule? rule)
+    private PathResolution ResolveNested(
+        string resolvedTargetPrefix,
+        Type sourceType,
+        Type targetType,
+        IReadOnlyList<string> remainderSegments,
+        string originalPath)
+    {
+        var nestedTypePair = new TypePair(sourceType, targetType);
+        var nestedMap = _compiledMapProvider(nestedTypePair);
+        if (nestedMap is null)
+        {
+            throw new InvalidOperationException(
+                $"Mapping from {sourceType.FullName} to {targetType.FullName} is not configured while resolving path '{originalPath}'.");
+        }
+
+        var remainderPath = JsonPointer.Combine(remainderSegments);
+        var nestedResolution = nestedMap.ResolvePath(remainderPath, originalPath);
+        if (nestedResolution.Ignored)
+        {
+            return nestedResolution;
+        }
+
+        return PathResolution.Resolved(
+            originalPath,
+            JsonPointer.Combine(resolvedTargetPrefix, nestedResolution.TargetPath),
+            nestedResolution.ValueConverter,
+            nestedResolution.SourceType,
+            nestedResolution.TargetType);
+    }
+
+    private bool TryResolveExplicitRule(
+        IReadOnlyList<string> segments,
+        out MemberRule rule,
+        out int consumedSegments)
+    {
+        for (var length = segments.Count; length >= 1; length--)
+        {
+            var candidatePath = JsonPointer.Combine(segments.Take(length));
+            if (_explicitRules.TryGetValue(candidatePath, out rule!))
+            {
+                consumedSegments = length;
+                return true;
+            }
+        }
+
+        rule = null!;
+        consumedSegments = 0;
+        return false;
+    }
+
+    private bool IsIgnored(string targetPath)
+    {
+        foreach (var ignoredTargetPath in _ignoredTargetPaths)
+        {
+            if (string.Equals(targetPath, ignoredTargetPath, StringComparison.OrdinalIgnoreCase) ||
+                targetPath.StartsWith(ignoredTargetPath + "/", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void EnsureLeafSupported(Type targetType, string originalPath)
+    {
+        if (PathLeafTypes.IsSupported(targetType))
+        {
+            return;
+        }
+
+        throw new NotSupportedException(
+            $"Path '{originalPath}' resolves to non-leaf target type {targetType.FullName} for mapping {_typePair.Source.FullName} -> {_typePair.Target.FullName}.");
+    }
+
+    private InvalidOperationException CreatePathResolutionException(string originalPath, string message) =>
+        new($"{message} Mapping pair: {_typePair.Source.FullName} -> {_typePair.Target.FullName}.");
+
+    private static object? ConvertValueIfNeeded(string op, object? value, PathResolution resolution)
     {
         if (value is null)
         {
@@ -128,7 +275,7 @@ internal sealed class CompiledMap<TSource, TTarget> : ICompiledMap
             return value;
         }
 
-        return rule?.Convert is null ? value : rule.Convert(value);
+        return resolution.ValueConverter is null ? value : resolution.ValueConverter(value);
     }
 
     private static bool OperationRequiresValue(string op) =>
@@ -137,31 +284,90 @@ internal sealed class CompiledMap<TSource, TTarget> : ICompiledMap
         string.Equals(op, "test", StringComparison.OrdinalIgnoreCase);
 }
 
+internal sealed class PropertyMap
+{
+    public string SourcePath { get; set; } = string.Empty;
+    public string TargetPath { get; set; } = string.Empty;
+    public Type SourceType { get; set; } = typeof(object);
+    public Type TargetType { get; set; } = typeof(object);
+    public Func<object?, object?> Convert { get; set; } = static value => value;
+}
+
 internal sealed class MemberRule
 {
     public string SourcePath { get; set; } = string.Empty;
     public string TargetPath { get; set; } = string.Empty;
-    public bool Ignored { get; set; }
+    public Type SourceType { get; set; } = typeof(object);
+    public Type TargetType { get; set; } = typeof(object);
     public Func<object?, object?>? Convert { get; set; }
+}
+
+internal sealed class PathResolution
+{
+    private PathResolution(
+        bool ignored,
+        string sourcePath,
+        string targetPath,
+        Func<object?, object?>? valueConverter,
+        Type sourceType,
+        Type targetType)
+    {
+        Ignored = ignored;
+        SourcePath = sourcePath;
+        TargetPath = targetPath;
+        ValueConverter = valueConverter;
+        SourceType = sourceType;
+        TargetType = targetType;
+    }
+
+    public bool Ignored { get; }
+
+    public string SourcePath { get; }
+
+    public string TargetPath { get; }
+
+    public Func<object?, object?>? ValueConverter { get; }
+
+    public Type SourceType { get; }
+
+    public Type TargetType { get; }
+
+    public static PathResolution Resolved(
+        string sourcePath,
+        string targetPath,
+        Func<object?, object?>? valueConverter,
+        Type sourceType,
+        Type targetType) =>
+        new(false, sourcePath, targetPath, valueConverter, sourceType, targetType);
+
+    public static PathResolution CreateIgnored(string sourcePath, string targetPath, Type sourceType, Type targetType) =>
+        new(true, sourcePath, targetPath, null, sourceType, targetType);
 }
 
 internal static class PatchMapCompiler
 {
-    public static ICompiledMap Compile<TSource, TTarget>(IReadOnlyDictionary<string, MemberConfiguration> memberConfigurations)
+    public static ICompiledMap Compile<TSource, TTarget>(
+        IReadOnlyDictionary<string, MemberConfiguration> memberConfigurations,
+        Func<TypePair, ICompiledMap?> compiledMapProvider)
         where TSource : class
         where TTarget : class
     {
-        var rules = BuildDefaultRules<TSource, TTarget>();
+        var explicitRules = new Dictionary<string, MemberRule>(StringComparer.OrdinalIgnoreCase);
+        var ignoredTargetPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var configuration in memberConfigurations.Values)
         {
-            ApplyConfiguration<TSource, TTarget>(rules, configuration);
+            ApplyConfiguration<TSource, TTarget>(explicitRules, ignoredTargetPaths, configuration);
         }
 
-        return new CompiledMap<TSource, TTarget>(rules);
+        return new CompiledMap<TSource, TTarget>(
+            explicitRules,
+            BuildDefaultRules<TSource, TTarget>(),
+            ignoredTargetPaths,
+            compiledMapProvider);
     }
 
-    private static Dictionary<string, MemberRule> BuildDefaultRules<TSource, TTarget>()
+    private static Dictionary<string, PropertyMap> BuildDefaultRules<TSource, TTarget>()
         where TSource : class
         where TTarget : class
     {
@@ -170,7 +376,7 @@ internal static class PatchMapCompiler
             .Where(static property => property.CanWrite)
             .ToDictionary(static property => property.Name, StringComparer.OrdinalIgnoreCase);
 
-        var rules = new Dictionary<string, MemberRule>(StringComparer.OrdinalIgnoreCase);
+        var rules = new Dictionary<string, PropertyMap>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var sourceProperty in typeof(TSource).GetProperties(BindingFlags.Instance | BindingFlags.Public))
         {
@@ -179,12 +385,12 @@ internal static class PatchMapCompiler
                 continue;
             }
 
-            var path = "/" + sourceProperty.Name;
-            rules[path] = new MemberRule
+            rules[sourceProperty.Name] = new PropertyMap
             {
-                SourcePath = path,
+                SourcePath = "/" + sourceProperty.Name,
                 TargetPath = "/" + targetProperty.Name,
-                Ignored = false,
+                SourceType = sourceProperty.PropertyType,
+                TargetType = targetProperty.PropertyType,
                 Convert = BuildValueConverter(sourceProperty.PropertyType, targetProperty.PropertyType)
             };
         }
@@ -194,25 +400,14 @@ internal static class PatchMapCompiler
 
     private static void ApplyConfiguration<TSource, TTarget>(
         IDictionary<string, MemberRule> rules,
+        ISet<string> ignoredTargetPaths,
         MemberConfiguration configuration)
         where TSource : class
         where TTarget : class
     {
         if (configuration.Ignored)
         {
-            var targetPath = configuration.TargetPath;
-            var existing = rules.Values.FirstOrDefault(rule => string.Equals(rule.TargetPath, targetPath, StringComparison.OrdinalIgnoreCase));
-            if (existing is not null)
-            {
-                rules[existing.SourcePath] = new MemberRule
-                {
-                    SourcePath = existing.SourcePath,
-                    TargetPath = existing.TargetPath,
-                    Ignored = true,
-                    Convert = existing.Convert
-                };
-            }
-
+            ignoredTargetPaths.Add(configuration.TargetPath);
             return;
         }
 
@@ -221,35 +416,51 @@ internal static class PatchMapCompiler
             return;
         }
 
-        var sourceDescriptor = SourceMemberDescriptor.Create<TSource>(configuration.SourceExpression);
+        var sourceDescriptor = SourceMemberDescriptor.Create<TSource>(configuration.SourceExpression, configuration.TargetMemberType);
+        if (rules.TryGetValue(sourceDescriptor.Path, out var existingRule) &&
+            !string.Equals(existingRule.TargetPath, configuration.TargetPath, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Conflicting MapFrom configuration for source path '{sourceDescriptor.Path}' in mapping {typeof(TSource).FullName} -> {typeof(TTarget).FullName}.");
+        }
+
         rules[sourceDescriptor.Path] = new MemberRule
         {
             SourcePath = sourceDescriptor.Path,
             TargetPath = configuration.TargetPath,
-            Ignored = false,
+            SourceType = sourceDescriptor.MemberType,
+            TargetType = sourceDescriptor.TargetMemberType,
             Convert = sourceDescriptor.ValueConverter
         };
     }
 
-    private static Func<object?, object?> BuildValueConverter(Type sourceType, Type targetType)
-    {
-        return value => ValueConversion.Convert(value, sourceType, targetType);
-    }
+    private static Func<object?, object?> BuildValueConverter(Type sourceType, Type targetType) =>
+        value => ValueConversion.Convert(value, sourceType, targetType);
 }
 
 internal sealed class SourceMemberDescriptor
 {
-    private SourceMemberDescriptor(string path, Func<object?, object?> valueConverter)
+    private SourceMemberDescriptor(
+        string path,
+        Func<object?, object?> valueConverter,
+        Type memberType,
+        Type targetMemberType)
     {
         Path = path;
         ValueConverter = valueConverter;
+        MemberType = memberType;
+        TargetMemberType = targetMemberType;
     }
 
     public string Path { get; }
 
     public Func<object?, object?> ValueConverter { get; }
 
-    public static SourceMemberDescriptor Create<TSource>(LambdaExpression expression)
+    public Type MemberType { get; }
+
+    public Type TargetMemberType { get; }
+
+    public static SourceMemberDescriptor Create<TSource>(LambdaExpression expression, Type targetMemberType)
     {
         var memberAccess = SingleMemberAccessVisitor.Find(expression.Body, expression.Parameters[0]);
         if (memberAccess is null)
@@ -269,15 +480,15 @@ internal sealed class SourceMemberDescriptor
             valueParameter);
 
         var compiled = lambda.Compile();
-        return new SourceMemberDescriptor(sourcePath, compiled);
+        Func<object?, object?> converter = value => ValueConversion.Convert(compiled(value), expression.ReturnType, targetMemberType);
+        return new SourceMemberDescriptor(sourcePath, converter, memberAccess.MemberType, targetMemberType);
     }
 }
 
 internal sealed class SingleMemberAccessVisitor : ExpressionVisitor
 {
     private readonly ParameterExpression _rootParameter;
-    private MemberAccessMatch? _match;
-    private bool _multipleMatches;
+    private readonly Dictionary<string, MemberAccessMatch> _matches = new(StringComparer.Ordinal);
 
     private SingleMemberAccessVisitor(ParameterExpression rootParameter)
     {
@@ -288,7 +499,7 @@ internal sealed class SingleMemberAccessVisitor : ExpressionVisitor
     {
         var visitor = new SingleMemberAccessVisitor(rootParameter);
         visitor.Visit(expression);
-        return visitor._multipleMatches ? null : visitor._match;
+        return visitor.GetSingleMatch();
     }
 
     protected override Expression VisitMember(MemberExpression node)
@@ -298,17 +509,26 @@ internal sealed class SingleMemberAccessVisitor : ExpressionVisitor
         {
             var pathSegments = ExpressionPath.GetMemberSegments(node);
             var match = new MemberAccessMatch(node, pathSegments, node.Type);
-            if (_match is null)
-            {
-                _match = match;
-            }
-            else if (!string.Equals(_match.Path, match.Path, StringComparison.Ordinal))
-            {
-                _multipleMatches = true;
-            }
+            _matches[match.Path] = match;
         }
 
         return base.VisitMember(node);
+    }
+
+    private MemberAccessMatch? GetSingleMatch()
+    {
+        if (_matches.Count == 0)
+        {
+            return null;
+        }
+
+        var maximalMatches = _matches.Values
+            .Where(candidate => !_matches.Keys.Any(other =>
+                !string.Equals(other, candidate.Path, StringComparison.Ordinal) &&
+                other.StartsWith(candidate.Path + "/", StringComparison.Ordinal)))
+            .ToArray();
+
+        return maximalMatches.Length == 1 ? maximalMatches[0] : null;
     }
 
     private bool DependsOnRoot(Expression expression)
@@ -377,6 +597,75 @@ internal sealed class ReplaceExpressionVisitor : ExpressionVisitor
         }
 
         return base.Visit(node);
+    }
+}
+
+internal static class JsonPointer
+{
+    public static string[] ValidateAndSplit(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new NotSupportedException("Json Pointer path must not be empty.");
+        }
+
+        if (!path.StartsWith("/", StringComparison.Ordinal))
+        {
+            throw new NotSupportedException($"Json Pointer path '{path}' must start with '/'.");
+        }
+
+        var segments = path.Substring(1).Split('/');
+        if (segments.Length == 0 || segments.Any(static segment => segment.Length == 0))
+        {
+            throw new NotSupportedException($"Json Pointer path '{path}' contains empty segments.");
+        }
+
+        foreach (var segment in segments)
+        {
+            if (segment.Contains('~'))
+            {
+                throw new NotSupportedException($"Json Pointer path '{path}' contains unsupported escape sequences.");
+            }
+
+            if (segment == "-" || segment.All(char.IsDigit))
+            {
+                throw new NotSupportedException($"Json Pointer path '{path}' contains unsupported array segments.");
+            }
+        }
+
+        return segments;
+    }
+
+    public static string Combine(IEnumerable<string> segments) => "/" + string.Join("/", segments);
+
+    public static string Combine(string prefix, string suffix) => prefix + suffix;
+}
+
+internal static class PathLeafTypes
+{
+    public static bool IsSupported(Type type)
+    {
+        var effectiveType = Nullable.GetUnderlyingType(type) ?? type;
+        if (effectiveType == typeof(bool) || effectiveType == typeof(string) || effectiveType.IsEnum)
+        {
+            return true;
+        }
+
+        return Type.GetTypeCode(effectiveType) switch
+        {
+            TypeCode.Byte => true,
+            TypeCode.SByte => true,
+            TypeCode.Int16 => true,
+            TypeCode.UInt16 => true,
+            TypeCode.Int32 => true,
+            TypeCode.UInt32 => true,
+            TypeCode.Int64 => true,
+            TypeCode.UInt64 => true,
+            TypeCode.Single => true,
+            TypeCode.Double => true,
+            TypeCode.Decimal => true,
+            _ => false
+        };
     }
 }
 
