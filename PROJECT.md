@@ -47,8 +47,8 @@ Nuget package Microsoft.AspNetCore.JsonPatch.SystemTextJson - https://www.nuget.
 
 ## Тестирование
 Отдельный проект с тестами на XUnit, проверяющий
-### все виды операций, описаных в протоколе Json Patch
-- create
+### поддерживаемые операции Json Patch
+- add
 - replace
 - remove
 - test
@@ -57,5 +57,4 @@ Nuget package Microsoft.AspNetCore.JsonPatch.SystemTextJson - https://www.nuget.
 - патч поля из патча поля поля с тем же названием
 - патч поля из патча поля с другим названием
 - патч поля с вычислением из другого поля
-
 

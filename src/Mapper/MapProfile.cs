@@ -56,16 +56,18 @@ public sealed class MapBuilder<TSource, TTarget>
 public sealed class MemberOptionsBuilder<TSource, TTarget, TMember>
 {
     private readonly string _targetPath;
+    private readonly Type _targetMemberType;
     private MemberConfiguration? _configuration;
 
     internal MemberOptionsBuilder(string targetPath)
     {
         _targetPath = targetPath;
+        _targetMemberType = typeof(TMember);
     }
 
     public void Ignore()
     {
-        _configuration = MemberConfiguration.CreateIgnored(_targetPath);
+        _configuration = MemberConfiguration.CreateIgnored(_targetPath, _targetMemberType);
     }
 
     public void MapFrom<TSourceMember>(Expression<Func<TSource, TSourceMember>> sourceMember)
@@ -75,17 +77,17 @@ public sealed class MemberOptionsBuilder<TSource, TTarget, TMember>
             throw new ArgumentNullException(nameof(sourceMember));
         }
 
-        _configuration = MemberConfiguration.ForMapFrom(_targetPath, sourceMember);
+        _configuration = MemberConfiguration.ForMapFrom(_targetPath, _targetMemberType, sourceMember);
     }
 
-    internal MemberConfiguration Build() => _configuration ?? MemberConfiguration.Direct(_targetPath);
+    internal MemberConfiguration Build() => _configuration ?? MemberConfiguration.Direct(_targetPath, _targetMemberType);
 }
 
 internal interface IMapDefinition
 {
     Type SourceType { get; }
     Type TargetType { get; }
-    ICompiledMap Compile();
+    ICompiledMap Compile(Func<TypePair, ICompiledMap?> compiledMapProvider);
 }
 
 internal sealed class MapDefinition<TSource, TTarget> : IMapDefinition
@@ -98,30 +100,36 @@ internal sealed class MapDefinition<TSource, TTarget> : IMapDefinition
 
     public Type TargetType => typeof(TTarget);
 
-    public ICompiledMap Compile() => PatchMapCompiler.Compile<TSource, TTarget>(MemberConfigurations);
+    public ICompiledMap Compile(Func<TypePair, ICompiledMap?> compiledMapProvider) =>
+        PatchMapCompiler.Compile<TSource, TTarget>(MemberConfigurations, compiledMapProvider);
 }
 
 internal sealed class MemberConfiguration
 {
-    private MemberConfiguration(string targetPath, bool ignored, LambdaExpression? sourceExpression)
+    private MemberConfiguration(string targetPath, Type targetMemberType, bool ignored, LambdaExpression? sourceExpression)
     {
         TargetPath = targetPath;
+        TargetMemberType = targetMemberType;
         Ignored = ignored;
         SourceExpression = sourceExpression;
     }
 
     public string TargetPath { get; }
 
+    public Type TargetMemberType { get; }
+
     public bool Ignored { get; }
 
     public LambdaExpression? SourceExpression { get; }
 
-    public static MemberConfiguration Direct(string targetPath) => new(targetPath, false, null);
+    public static MemberConfiguration Direct(string targetPath, Type targetMemberType) =>
+        new(targetPath, targetMemberType, false, null);
 
-    public static MemberConfiguration CreateIgnored(string targetPath) => new(targetPath, true, null);
+    public static MemberConfiguration CreateIgnored(string targetPath, Type targetMemberType) =>
+        new(targetPath, targetMemberType, true, null);
 
-    public static MemberConfiguration ForMapFrom(string targetPath, LambdaExpression sourceExpression) =>
-        new(targetPath, false, sourceExpression);
+    public static MemberConfiguration ForMapFrom(string targetPath, Type targetMemberType, LambdaExpression sourceExpression) =>
+        new(targetPath, targetMemberType, false, sourceExpression);
 }
 
 internal static class ExpressionPath

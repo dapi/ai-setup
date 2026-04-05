@@ -5,7 +5,6 @@ C# - язык
 DotNet Standart 2.1 - целевая платформа
 
 ## Key commands
-- `<команда запуска определится позже>` — run
 - `dotnet test` — tests
 
 ## Conventions
