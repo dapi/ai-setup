@@ -6,11 +6,11 @@ Allows authenticated users to view their profile and change their email address 
 
 ## Routes
 
-| HTTP   | Path                      | Controller#Action                        |
-|:-------|:--------------------------|:-----------------------------------------|
-| GET    | `/users/profile`          | `users/profile#show`                     |
-| PATCH  | `/users/profile/email`    | `users/profile/emails#update`            |
-| PATCH  | `/users/profile/password` | `users/profile/passwords#update`         |
+| HTTP | Path | Controller#Action |
+| :--- | :--- | :--- |
+| GET | `/users/profile` | `users/profile#show` |
+| PATCH | `/users/profile/email` | `users/profile/emails#update` |
+| PATCH | `/users/profile/password` | `users/profile/passwords#update` |
 
 All routes require authentication (`authenticate_user!` from `ApplicationController`).
 
@@ -65,6 +65,7 @@ Added a "Профиль" `<Link>` button next to the "Выйти" button for aut
 ## i18n Keys (`config/locales/ru.yml`)
 
 Section `auth.profile`:
+
 - `title`, `link`, `back_to_home`
 - `email.section_title`, `email.current_email_label`, `email.new_email_label`, `email.new_email_placeholder`, `email.submit`, `email.success`, `email.pending_confirmation`, `email.same_as_current`
 - `password.section_title`, `password.current_password_label`, `password.current_password_placeholder`, `password.new_password_label`, `password.new_password_placeholder`, `password.password_confirmation_label`, `password.password_confirmation_placeholder`, `password.submit`, `password.success`, `password.forgot_password`
@@ -74,12 +75,11 @@ Section `auth.profile`:
 ## Configuration Changes
 
 | File | Change |
-|:-----|:-------|
+| :--- | :----- |
 | `config/initializers/devise.rb` | `reconfirmable = true` (email change requires confirmation) |
-| `config/initializers/devise.rb` | `password_length = 8..128` (aligned with i18n "минимум 8 символов") |
-| `app/controllers/application_controller.rb` | `allow_browser` skipped in test env; `unconfirmed_email` added to shared props |
-| `config/environments/test.rb` | `config.host_authorization` exclusion added; see also rails_helper.rb fix |
-| `spec/rails_helper.rb` | `ENV['RAILS_ENV'] = 'test'` (hard-assign instead of `||=`) to prevent dev env leaking in |
+| `config/initializers/devise.rb` | `password_length = 8..128` (aligned with i18n) |
+| `app/controllers/application_controller.rb` | `allow_browser` skipped in test; `unconfirmed_email` in shared props |
+| `spec/rails_helper.rb` | `ENV['RAILS_ENV'] = 'test'` (hard-assign, prevents dev env leaking in) |
 
 ---
 
