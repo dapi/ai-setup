@@ -1,4 +1,4 @@
-import { Head, router, usePage } from '@inertiajs/react'
+import { Head, Link, router, usePage } from '@inertiajs/react'
 import Toast from '../components/Toast'
 
 interface LandingProps {
@@ -47,12 +47,20 @@ export default function Landing({ app_name }: LandingProps) {
           {current_user && (
             <div className="flex flex-col items-center gap-2">
               <span className="text-sm text-gray-500">{current_user.email}</span>
-              <button
-                onClick={handleSignOut}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white text-sm rounded-md transition-colors"
-              >
-                Выйти
-              </button>
+              <div className="flex gap-2">
+                <Link
+                  href="/users/profile"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-md transition-colors"
+                >
+                  Профиль
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white text-sm rounded-md transition-colors"
+                >
+                  Выйти
+                </button>
+              </div>
             </div>
           )}
         </div>

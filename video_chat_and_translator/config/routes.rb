@@ -16,6 +16,13 @@ Rails.application.routes.draw do
     namespace :confirmations do
       resource :resend, only: [ :create ]
     end
+
+    resource :profile, only: [ :show ], controller: "profile"
+
+    namespace :profile do
+      resource :email, only: [ :update ], controller: "emails"
+      resource :password, only: [ :update ], controller: "passwords"
+    end
   end
 
   # letter_opener_web (development only)
