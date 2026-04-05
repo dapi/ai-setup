@@ -55,19 +55,21 @@ export const Button = ({ color, children }) => <Btn color={color}>{children}</Bt
   - `domains` - main folder that contains all business logic of the application grouped by domains, subdomains, etc.; there is no explicit limit on nesting levels, each domain/subdomain contains both FE and BE business logic files
     - `<simple-domain-name>` - folder that contains all domain related files, if domain is simple and has no subdomains
       - `api.ts` - file exports `<simpleDomainName>Api` object that describes all endpoints that belongs to this domain: `{ "/api/<simple-domain-name>": { GET(), POST(), etc.  }}`
+      - `api.test.ts` - tests for all endpoints from `api.ts` from the same folder
       - `<simple-domain-name>.tsx` - React component that renders this domain page
       - `components`, `ui`, `utils` - if domain is not complex enough to have subdomains, but not simple enough to fit in one file, it can be split into components, ui and utils if necessary
     - `<complex-domain-name>` - folder that contains subdomains of a complex domain
       - `<subdomain-name>` - folder that contains all subdomain files (complex subdomains can be composed from sub-sub-domain; the level of nesting depends on the level of domain/subdomain complexity)
         - `api.ts` - file exports `<subdomainName>Api` object that describes all endpoints that belongs to this domain: `{ "/api/<complex-domain-name>/<subdomain-name>": { GET(), POST(), etc.  }}`
+        - `api.test.ts` - tests for all endpoints from `api.ts` from the same folder        
         - `<subdomain-name>.tsx` - React component that renders this subdomain page
         - `components`, `ui`, `utils` - if subdomain is not complex enough to have own subdomains, but not simple enough to fit in one file, it can be split into components, ui and utils if necessary
       - `components`, `ui`, `utils` - few subdomains can share common components, ui and utils if necessary
     - `components`, `ui`, `utils` - few domains can share common components, ui and utils if necessary
   - `state` - folder contains helper function related to application state, examples: functions to access database on BE, functions to access `sessionStorage` on FE
-  - `tests` - folder contains e2e Playwright tests
   - `ui` - folder contains common UI React components
   - `utils` - small utils functions used across the whole app
+- `tests` - folder contains e2e Playwright tests
 
 If `components`, `ui` or `utils` has to be used by few subdomains they are placed on the lowest level of common subdomains. They can and should be moved up or down on the domain/subdomain trees according the necessary usage.
 
