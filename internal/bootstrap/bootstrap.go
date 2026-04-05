@@ -8,7 +8,15 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	sourcev1connect "feedium/api/source/v1/sourcev1connect"
+	sourcesvc "feedium/internal/app/source"
+	sourceconnect "feedium/internal/app/source/adapters/connect"
+	sourcepg "feedium/internal/app/source/adapters/postgres"
+	"feedium/internal/platform/postgres"
 )
+
+const shutdownTimeout = 5 * time.Second
 
 func Run(ctx context.Context, log *slog.Logger) error {
 	// Step 1: Read PORT from environment, default to "8080"
@@ -30,34 +38,49 @@ func Run(ctx context.Context, log *slog.Logger) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", healthHandler)
 
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		return fmt.Errorf("DATABASE_URL is required")
+	}
+	db, err := postgres.Open(dsn)
+	if err != nil {
+		return err
+	}
+	repo := sourcepg.New(db)
+	service := sourcesvc.NewService(repo, log)
+	handler := sourceconnect.New(service, log)
+	path, h := sourcev1connect.NewSourceServiceHandler(handler)
+	mux.Handle(path, h)
+
 	// Step 4: Create HTTP server
 	server := &http.Server{
-		Addr:    ":" + portStr,
-		Handler: mux,
+		Addr:              ":" + portStr,
+		Handler:           mux,
+		ReadHeaderTimeout: shutdownTimeout,
 	}
 
 	// Step 5: Start server in goroutine
 	errCh := make(chan error, 1)
 	go func() {
-		err := server.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			errCh <- err
+		serveErr := server.ListenAndServe()
+		if serveErr != nil && serveErr != http.ErrServerClosed {
+			errCh <- serveErr
 		}
 	}()
 
 	// Step 6: Log that we're listening
-	log.Info("listening", "port", port)
+	log.InfoContext(ctx, "listening", "port", port)
 
 	// Step 7: Wait for context cancellation or error
 	select {
 	case <-ctx.Done():
-	case err := <-errCh:
-		return err
+	case serveErr := <-errCh:
+		return serveErr
 	}
 
 	// Step 8: Shutdown
-	log.Info("shutting down")
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	log.InfoContext(ctx, "shutting down")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
 	return server.Shutdown(shutdownCtx)
