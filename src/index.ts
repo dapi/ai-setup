@@ -2,7 +2,7 @@ import { apiRoutes } from "./app/api-routes";
 import index from "./index.html";
 import { serve } from "bun";
 
-const server = serve({
+export const server = serve({
   development: process.env.NODE_ENV === "development" && {
     console: true,
     hmr: true,

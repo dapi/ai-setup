@@ -44,6 +44,8 @@
 - `workers: process.env.CI ? 1 : undefined`
 - `retries: process.env.CI ? 2 : 0`
 - Единственный проект — `chromium`
+- `port = process.env.PORT || "3000"` — порт читается из переменной окружения, по умолчанию `3000`
+- `baseURL` и `webServer.url` строятся из `port`
 - `webServer.command` зависит от `NODE_ENV` (production → `bun run serve`, development → `bun run dev`)
 - `reuseExistingServer: !process.env.CI`
 

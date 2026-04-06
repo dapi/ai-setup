@@ -24,7 +24,7 @@ Time spent:
  - Brief: 30m
  - Spec: 30m (Ревью прошел с первого раза)
  - Plan: 15m
- - Implementation: 
+ - Implementation: 1h
 
 Problems:
   - Та же проблема, что и с первой фичей. Изначально сгенерированный Brief включал множество деталей реализации, которые были удалены в ходе ревью, так как относились к области spec-а
@@ -33,4 +33,4 @@ Quality:
  - Brief: хорошо
  - Spec: отлично
  - Plan: отлично
- - Implementation: 
+ - Implementation: хорошо

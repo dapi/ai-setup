@@ -10,5 +10,5 @@ export default defineConfig({
   arrowParens: "avoid",
   organizeImports: true,
   sortPackageJson: true,
-  ignorePatterns: [".*/**", "homeworks/**", "node_modules/**", "dist/**"],
+  ignorePatterns: [".*/**", "homeworks/**", "node_modules/**", "dist/**", "test-results/**", "playwright-report/**"],
 });

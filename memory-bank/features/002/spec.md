@@ -63,6 +63,8 @@ bunx playwright install chromium
 import { defineConfig, devices } from "@playwright/test";
 
 const isProduction = !process.env.NODE_ENV || process.env.NODE_ENV === "production";
+const port = process.env.PORT || "3000";
+const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: "./tests",
@@ -72,7 +74,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "list",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
   },
   projects: [
@@ -83,13 +85,14 @@ export default defineConfig({
   ],
   webServer: {
     command: isProduction ? "bun run serve" : "bun run dev",
-    url: "http://localhost:3000",
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
 });
 ```
 
 - `testDir: "./tests"` — Playwright ищет тесты только в директории `tests/`
+- `port` — читается из `process.env.PORT`, по умолчанию `"3000"`. `baseURL` и `webServer.url` строятся из этого значения, что позволяет менять порт через переменную окружения без изменения конфига
 - `workers: process.env.CI ? 1 : undefined` — в CI один воркер для стабильности; локально Playwright использует количество по умолчанию (половина CPU)
 - `retries: process.env.CI ? 2 : 0` — в CI до 2 повторных запусков для устойчивости к flaky-тестам; локально повторы отключены
 - Единственный проект — `chromium` (приложение поддерживает только Chrome)
