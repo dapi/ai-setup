@@ -11,7 +11,7 @@
 
 ### Шаг 1. Установка зависимостей
 
-1. Выполнить `bun add -d @playwright/test`
+1. Выполнить `bun add -d @playwright/test` (изменение `package.json` разрешено спекой — см. разделы 1, 2)
 2. Если команда завершилась с ошибкой — остановиться, сообщить об ошибке
 3. Выполнить `bunx playwright install chromium`
 4. Если команда завершилась с ошибкой — остановиться, сообщить об ошибке
@@ -30,7 +30,7 @@
 "test:e2e": "NODE_ENV=development bunx playwright test"
 ```
 
-**Изменяемый файл:** `package.json` (только секция `scripts`)
+**Изменяемый файл:** `package.json` (только секция `scripts`; изменение разрешено спекой — см. раздел 2)
 
 **Проверка:** скрипты `test`, `test:api`, `test:e2e` присутствуют в `package.json`
 
@@ -41,8 +41,8 @@
 Создать файл `playwright.config.ts` в корне проекта с содержимым из спеки:
 
 - `testDir: "./tests"`
-- `workers: 1`
-- `retries: 0`
+- `workers: process.env.CI ? 1 : undefined`
+- `retries: process.env.CI ? 2 : 0`
 - Единственный проект — `chromium`
 - `webServer.command` зависит от `NODE_ENV` (production → `bun run serve`, development → `bun run dev`)
 - `reuseExistingServer: !process.env.CI`
@@ -93,18 +93,23 @@
 
 ---
 
-### Шаг 7. Обновить `.gitignore`
+### Шаг 7. Обновить `.gitignore` и `oxfmt.config.ts`
 
-Добавить записи:
+Добавить записи в `.gitignore`:
 
 ```
+dist/
 /test-results/
 /playwright-report/
 ```
 
-**Изменяемый файл:** `.gitignore`
+- `dist/` — артефакты сборки (`bun run build`), создаются в том числе при запуске `bun run test`
 
-**Проверка:** записи присутствуют в файле
+Добавить `test-results/**` и `playwright-report/**` в `ignorePatterns` в `oxfmt.config.ts` (изменение `oxfmt.config.ts` разрешено спекой — см. раздел 6).
+
+**Изменяемые файлы:** `.gitignore`, `oxfmt.config.ts`
+
+**Проверка:** записи присутствуют в обоих файлах
 
 ---
 
@@ -129,20 +134,21 @@
 
 ## Сводка изменяемых файлов
 
-| Файл                           | Действие   |
-| ------------------------------ | ---------- |
-| `package.json`                 | Изменить   |
-| `playwright.config.ts`         | Создать    |
-| `src/index.ts`                 | Изменить   |
-| `src/domains/home/api.test.ts` | Создать    |
-| `tests/home.spec.ts`           | Создать    |
-| `.gitignore`                   | Изменить   |
+| Файл                           | Действие                                                           |
+| ------------------------------ | ------------------------------------------------------------------ |
+| `package.json`                 | Изменить                                                           |
+| `playwright.config.ts`         | Создать                                                            |
+| `src/index.ts`                 | Изменить                                                           |
+| `src/domains/home/api.test.ts` | Создать                                                            |
+| `tests/home.spec.ts`           | Создать                                                            |
+| `.gitignore`                   | Изменить (добавить `dist/`, `test-results/`, `playwright-report/`) |
+| `oxfmt.config.ts`              | Изменить                                                           |
 
 ## Порядок выполнения
 
 ```
 Шаг 1 (зависимости)
-  → Шаг 2 (скрипты) + Шаг 3 (playwright config) + Шаг 4 (export server) + Шаг 7 (.gitignore)  [параллельно]
+  → Шаг 2 (скрипты) + Шаг 3 (playwright config) + Шаг 4 (export server) + Шаг 7 (.gitignore + oxfmt)  [параллельно]
     → Шаг 5 (API-тест)
       → Шаг 6 (E2E-тест)
         → Шаг 8 (линтер)

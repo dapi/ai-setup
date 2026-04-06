@@ -23,7 +23,7 @@ Quality:
 Time spent:
  - Brief: 30m
  - Spec: 30m (Ревью прошел с первого раза)
- - Plan: 
+ - Plan: 15m
  - Implementation: 
 
 Problems:
@@ -32,5 +32,5 @@ Problems:
 Quality:
  - Brief: хорошо
  - Spec: отлично
- - Plan: 
+ - Plan: отлично
  - Implementation: 
