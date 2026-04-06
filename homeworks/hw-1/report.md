@@ -17,3 +17,21 @@ Quality:
  - Spec: хорошо
  - Plan: очень хорошо
  - Implementation: хорошо
+
+ # Feature #002. Add tests - https://github.com/akoltun/ai-setup/issues/2
+
+
+Time spent:
+ - Brief: 30m
+ - Spec: 
+ - Plan: 
+ - Implementation: 
+
+Problems:
+  - Та же проблема, что и с первой фичей. Изначально сгенерированный Brief включал множество деталей реализации, которые были удалены в ходе ревью, так как относились к области spec-а
+
+Quality:
+ - Brief: 30m
+ - Spec: 
+ - Plan: 
+ - Implementation: 
