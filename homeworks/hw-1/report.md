@@ -39,8 +39,8 @@ Quality:
 
 Time spent:
  - Brief: 30m
- - Spec: 
  - Plan: 
+ - Spec: 2h
  - Implementation: 
 
 Problems:
@@ -48,7 +48,7 @@ Problems:
   
 Quality:
  - Brief: хорошо
- - Spec: 
  - Plan: 
+ - Spec: хорошо
  - Implementation:
 
