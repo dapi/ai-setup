@@ -22,7 +22,7 @@ Quality:
 
 Time spent:
  - Brief: 30m
- - Spec: 30m (Ревью прошел с первого раза)
+ - Spec: 30m (Ревью прошел с первого раза. Уже сильно позже заметил, что ссылка была на спеку из первой фичи. Запустил ревью правильной спеки и все равно получил только одно неблокирующее замечание. Однако прямые ссылки в промптах - это боль)
  - Plan: 15m
  - Implementation: 1h
 
@@ -34,3 +34,21 @@ Quality:
  - Spec: отлично
  - Plan: отлично
  - Implementation: хорошо
+
+# Feature #003. Add CI/CD - https://github.com/akoltun/ai-setup/issues/3
+
+Time spent:
+ - Brief: 30m
+ - Spec: 
+ - Plan: 
+ - Implementation: 
+
+Problems:
+  - Опять ревью Брифа зациклилось. То просит детализировать содержимое README, а затем просит убрать детализацию
+  
+Quality:
+ - Brief: хорошо
+ - Spec: 
+ - Plan: 
+ - Implementation:
+
