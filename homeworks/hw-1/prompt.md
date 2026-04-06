@@ -257,3 +257,9 @@ Adjust the Brief in accord with the following answers for those questions:
 - Конкретное предложение по исправлению
 
 Если все критерии pass — напиши «0 замечаний, спека готова к реализации».
+
+## Plan
+### Prompt #41
+Ты работаешь по SDD.
+Прочитай Spec в `memory-bank/features/002/spec.md` и сгенерируй Plan в `memory-bank/features/002/plan.md`.
+
