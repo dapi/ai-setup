@@ -1,6 +1,6 @@
 # Feature Brief: Add Linter & Formatter
 
-**Issue:** akoltun/ai-setup#1
+**Issue:** akoltun/media-lib#1
 **Status:** Open
 **Date:** 2026-04-05
 

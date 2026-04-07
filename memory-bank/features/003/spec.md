@@ -1,7 +1,7 @@
 # Spec: Настройка CI/CD
 
 **Feature:** 003 — Добавить CI/CD
-**Issue:** akoltun/ai-setup#3
+**Issue:** akoltun/media-lib#3
 **Date:** 2026-04-06
 
 ---

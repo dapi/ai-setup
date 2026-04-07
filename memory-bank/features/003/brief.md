@@ -1,6 +1,6 @@
 # Feature Brief: Добавить CI/CD
 
-**Issue:** akoltun/ai-setup#3
+**Issue:** akoltun/media-lib#3
 **Status:** Active
 **Date:** 2026-04-06
 

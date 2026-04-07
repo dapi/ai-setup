@@ -21,4 +21,4 @@
 
 ## Repository
 
-https://github.com/akoltun/ai-setup
+https://github.com/akoltun/media-lib

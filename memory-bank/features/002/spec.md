@@ -2,7 +2,7 @@
 
 **Feature:** 002
 **Brief:** `memory-bank/features/002/brief.md`
-**Issue:** akoltun/ai-setup#2
+**Issue:** akoltun/media-lib#2
 **Status:** Active
 **Date:** 2026-04-06
 

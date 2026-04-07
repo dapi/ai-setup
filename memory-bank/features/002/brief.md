@@ -1,6 +1,6 @@
 # Feature Brief: Добавить тесты
 
-**Issue:** akoltun/ai-setup#2
+**Issue:** akoltun/media-lib#2
 **Статус:** Active
 **Дата:** 2026-04-06
 

@@ -1,4 +1,4 @@
-# Feature #001. Add Linter & Formatter - https://github.com/akoltun/ai-setup/issues/1
+# Feature #001. Add Linter & Formatter - https://github.com/akoltun/media-lib/issues/1
 
 Time spent:
  - Brief: 4h
@@ -18,7 +18,7 @@ Quality:
  - Plan: очень хорошо
  - Implementation: хорошо
 
- # Feature #002. Add tests - https://github.com/akoltun/ai-setup/issues/2
+ # Feature #002. Add tests - https://github.com/akoltun/media-lib/issues/2
 
 Time spent:
  - Brief: 30m
@@ -35,7 +35,7 @@ Quality:
  - Plan: отлично
  - Implementation: хорошо
 
-# Feature #003. Add CI/CD - https://github.com/akoltun/ai-setup/issues/3
+# Feature #003. Add CI/CD - https://github.com/akoltun/media-lib/issues/3
 
 Time spent:
  - Brief: 30m

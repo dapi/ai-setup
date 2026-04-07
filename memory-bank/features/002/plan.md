@@ -2,7 +2,7 @@
 
 **Feature:** 002
 **Spec:** `memory-bank/features/002/spec.md`
-**Issue:** akoltun/ai-setup#2
+**Issue:** akoltun/media-lib#2
 **Дата:** 2026-04-06
 
 ---

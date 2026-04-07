@@ -2,7 +2,7 @@
 
 **Feature:** 003
 **Spec:** `memory-bank/features/003/spec.md`
-**Issue:** akoltun/ai-setup#3
+**Issue:** akoltun/media-lib#3
 **Дата:** 2026-04-06
 
 ---
@@ -88,7 +88,7 @@ coverageThreshold = 0.8
 После заголовка `# media-lib` добавить:
 
 ```markdown
-![CI](https://github.com/akoltun/ai-setup/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/akoltun/media-lib/actions/workflows/ci.yml/badge.svg)
 ```
 
 #### 4.2. Описание проекта

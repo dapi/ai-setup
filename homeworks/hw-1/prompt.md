@@ -1,4 +1,4 @@
-# Feature #001. Add Linter & Formatter - https://github.com/akoltun/ai-setup/issues/1
+# Feature #001. Add Linter & Formatter - https://github.com/akoltun/media-lib/issues/1
 
 ## Brief
 ### Prompt #1
@@ -183,7 +183,7 @@ Adjust the Brief in accord with the following answers for those questions:
 Реализуй по спеке `memory-bank/features/001/spec.md` в соответствие с планом `memory-bank/features/001/plan.md`.
 
 ## Verify
-### Prompt #32 - см. файл .ai-setup/prompts/deep-code-review.md
+### Prompt #32 - см. файл .media-lib/prompts/deep-code-review.md
 
 ### Prompt #33
 Исправить замечания:
@@ -195,7 +195,7 @@ Adjust the Brief in accord with the following answers for those questions:
   6. [P1-008] — Игнорировать - это sample endpoint, будет удален при добавлении первой реально фичи
   7. [P1-005] — Зафиксировать @types/bun версию. Один символ в package.json. 
 
-# Feature #002. Add tests - https://github.com/akoltun/ai-setup/issues/2
+# Feature #002. Add tests - https://github.com/akoltun/media-lib/issues/2
 ### Prompt #34
 Прочитай issue 2 из репозитория проекта
 Сгенерируй Brief в соответствие  SDD best practices
@@ -343,7 +343,7 @@ Adjust the Brief in accord with the following answers for those questions:
 - в `src/index.ts` используй `export const server =` вместо `export { server }`
 - в `package.json` приведи скрипты запуска тестов в соответствие со спекой (используй `bun test` вместо `bun test src/`)
 
-# Feature #003. Add CI/CD - https://github.com/akoltun/ai-setup/issues/3
+# Feature #003. Add CI/CD - https://github.com/akoltun/media-lib/issues/3
 ## Brief
 ### Prompt #34
 Прочитай issue 3 из репозитория проекта
