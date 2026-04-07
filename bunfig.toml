@@ -1,2 +1,6 @@
 [serve.static]
 env = "BUN_PUBLIC_*"
+
+[test]
+coverage = true
+coverageThreshold = 0.8

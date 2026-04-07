@@ -9,6 +9,7 @@
     "compile": "tsc --noEmit",
     "serve": "NODE_ENV=production bun src/index.ts",
     "lint": "oxlint --fix && oxfmt --write",
+    "lint:ci": "oxlint && oxfmt --check",
     "test": "bun run build && bun test && bunx playwright test",
     "test:api": "NODE_ENV=development bun test",
     "test:e2e": "NODE_ENV=development bunx playwright test"
