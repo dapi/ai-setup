@@ -1,6 +1,6 @@
 # Current Phase
 
-**Last updated:** 2026-04-07
+**Last updated:** 2026-04-11
 **Approach:** Vertical slices — each feature delivers end-to-end value (route → controller → auth → view → specs)
 
 ---
@@ -40,7 +40,7 @@ Five vertical slices defined (see Work Queue below).
 
 | Epic | Status | Notes |
 |------|--------|-------|
-| 1.1 Hotel Management | started | `GET /admin/hotels` only |
+| 1.1 Hotel Management | started | Auth by role done (feature 001); full CRUD pending |
 | 1.2 Staff & Departments | started | `GET /admin/staff` only; no Departments controller |
 | 1.3 Ticket Management Core | started | `GET /admin/tickets` only; no CRUD, no status flow |
 | 1.4 Knowledge Base Management | not started | no controller / routes |
@@ -52,7 +52,7 @@ Five vertical slices defined (see Work Queue below).
 
 | # | Feature | Scope | Status |
 |---|---------|-------|--------|
-| 1 | [Secure admin hotel listing by role](memory-bank/features/001/brief.md) | Auth rules on `Admin::HotelsController#index` | `todo` |
+| 1 | [Secure admin hotel listing by role](memory-bank/features/001/brief.md) | Auth rules on `Admin::HotelsController#index` | `done` |
 | 2 | [Secure admin staff listing by role](memory-bank/features/002/brief.md) | Auth rules on `Admin::StaffController#index` | `todo` |
 | 3 | [Secure admin ticket listing by role](memory-bank/features/003/brief.md) | Auth rules on `Admin::TicketsController#index` | `todo` |
 | 4 | [Enable hotel creation in admin](memory-bank/features/004/brief.md) | `new` + `create`, form object, validation, auth | `todo` |
@@ -67,12 +67,23 @@ Each slice is independently shippable: route → controller action → authoriza
 
 Nothing — project is between tasks.
 
+### Recently completed
+
+- **Feature 001 — Secure admin hotel listing by role** (2026-04-11)
+  - Replaced hardcoded HTTP Basic Auth with real staff credentials (`has_secure_password`)
+  - Added `password_digest` column via migration
+  - RBAC: admin/manager → 200, staff → 403, unauthenticated → 401
+  - Added FactoryBot factory for `Staff`
+  - Added `db/seeds.rb` for all models
+  - PR: https://github.com/Melchakovartem/hotel_concierge_bot/pull/2
+  - Issue: https://github.com/Melchakovartem/hotel_concierge_bot/issues/1
+
 ---
 
 ## What Is Blocked
 
-- **Slices 2–5 depend on Slice 1** — authorization pattern must be established
-  on Hotels first, then replicated to Staff and Tickets.
+- **Slices 2–5 depend on Slice 1** — ~~authorization pattern must be established
+  on Hotels first~~ done; pattern established, replicate to Staff and Tickets next.
 - **CRUD slices (4–5) depend on auth slices (1–3)** — do not add write
   endpoints before access control is settled.
 - **Departments admin** — no controller yet; not in current queue.
@@ -102,3 +113,7 @@ Nothing — project is between tasks.
 | `app/controllers/admin/base_controller.rb` | Admin auth + layout |
 | `config/routes.rb` | All routes (admin namespace) |
 | `spec/requests/admin/access_spec.rb` | Admin auth integration tests |
+| `spec/requests/admin/hotels_spec.rb` | Hotels auth + authz request specs |
+| `spec/factories/staffs.rb` | FactoryBot factory for Staff |
+| `db/seeds.rb` | Seeds for all models |
+| `memory-bank/features/001/` | Spec, plan, and brief for feature 001 |
