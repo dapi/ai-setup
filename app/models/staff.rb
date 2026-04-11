@@ -1,4 +1,6 @@
 class Staff < ApplicationRecord
+  has_secure_password
+
   belongs_to :hotel
 
   has_many :assigned_tickets,

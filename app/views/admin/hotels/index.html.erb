@@ -9,12 +9,18 @@
     </tr>
   </thead>
   <tbody>
-    <% @hotels.each do |hotel| %>
+    <% if @hotels.empty? %>
       <tr>
-        <td><%= hotel.name %></td>
-        <td><%= hotel.timezone %></td>
-        <td><%= l(hotel.created_at, format: :short) %></td>
+        <td colspan="3"><%= t("admin.hotels.index.empty") %></td>
       </tr>
+    <% else %>
+      <% @hotels.each do |hotel| %>
+        <tr>
+          <td><%= hotel.name %></td>
+          <td><%= hotel.timezone %></td>
+          <td><%= l(hotel.created_at, format: :short) %></td>
+        </tr>
+      <% end %>
     <% end %>
   </tbody>
 </table>

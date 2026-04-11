@@ -2,14 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Admin access" do
   let!(:hotel) { create(:hotel, name: "Aurora") }
-  let!(:staff_member) do
-    Staff.create!(
-      hotel: hotel,
-      role: :manager,
-      name: "Jane Doe",
-      email: "jane@example.com"
-    )
-  end
+  let!(:staff_member) { create(:staff, :admin, hotel: hotel) }
   let!(:department) { Department.create!(hotel: hotel, name: "Housekeeping") }
   let!(:guest) do
     Guest.create!(
@@ -63,8 +56,7 @@ RSpec.describe "Admin access" do
   end
 
   def authorization_header
-    credentials = ActionController::HttpAuthentication::Basic.encode_credentials("admin", "password")
-
-    { "HTTP_AUTHORIZATION" => credentials }
+    encoded = Base64.strict_encode64("#{staff_member.email}:password")
+    { "Authorization" => "Basic #{encoded}" }
   end
 end
