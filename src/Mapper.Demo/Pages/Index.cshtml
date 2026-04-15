@@ -1,0 +1,78 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Json Patch Demo";
+}
+
+<section class="hero">
+    <p class="eyebrow">Mapper.Demo</p>
+    <h1>Map a source patch into a target patch.</h1>
+    <p class="lede">
+        This demo accepts a Json Patch for <code>Source</code>, runs it through the local <code>Mapper</code> library,
+        and shows the serialized <code>JsonPatchDocument&lt;Target&gt;</code> result.
+    </p>
+</section>
+
+<section class="panel-grid">
+    <article class="panel">
+        <h2>Source</h2>
+        <p class="panel-copy">Field descriptions come from the real demo type.</p>
+        <ul class="field-list">
+        @foreach (var field in Model.SourceFields)
+        {
+            <li><code>@field</code></li>
+        }
+        </ul>
+    </article>
+
+    <article class="panel">
+        <h2>Target</h2>
+        <p class="panel-copy">The profile maps <code>Name -&gt; DisplayName</code> and <code>Age -&gt; Age</code>.</p>
+        <ul class="field-list">
+        @foreach (var field in Model.TargetFields)
+        {
+            <li><code>@field</code></li>
+        }
+        </ul>
+    </article>
+</section>
+
+<section class="workspace">
+    <form method="post" class="panel form-panel">
+        <div class="form-header">
+            <div>
+                <h2>Json Patch Input</h2>
+                <p class="panel-copy">Edit the example or paste your own patch array.</p>
+            </div>
+            <button type="submit" class="map-button">Map</button>
+        </div>
+
+        <label asp-for="PatchInput" class="sr-only">Json Patch input</label>
+        <textarea asp-for="PatchInput" class="code-box" spellcheck="false"></textarea>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="message error-message" role="alert">@Model.ErrorMessage</div>
+        }
+    </form>
+
+    <section class="panel result-panel">
+        <div class="form-header">
+            <div>
+                <h2>Mapped Result</h2>
+                <p class="panel-copy">Successful mapping keeps you on the same page and prints JSON below.</p>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ResultJson))
+        {
+            <pre class="code-box result-box"><code>@Model.ResultJson</code></pre>
+        }
+        else
+        {
+            <div class="result-placeholder">
+                Submit the example patch to see <code>/DisplayName</code> and <code>/Age</code> in the mapped output.
+            </div>
+        }
+    </section>
+</section>
