@@ -1,55 +1,69 @@
-# Feature 002 — Secure admin staff listing by role
+# Feature 002 — Role-based authorization & Hotel CRUD
 
-## Goal
+## Задача
 
-Apply the authentication and authorization pattern established in slice 001 to
-`GET /admin/staff` so that access depends on the staff member's role.
+Ограничить доступ к административному разделу только для роли `admin` и реализовать
+полный CRUD для отелей (создание, редактирование, удаление).
 
-## Context
+## Проблема
 
-`Admin::StaffController#index` currently relies on the same hardcoded HTTP Basic
-Auth inherited from `BaseController`. After slice 001, `BaseController` will
-authenticate against Staff records. This slice adds the **role-based access
-rule** specific to the staff listing page.
+После slice 001 аутентификация работает через Staff-записи, но ролевые проверки
+отсутствуют — любой авторизованный сотрудник имеет доступ ко всем страницам
+в административном разделе, включая управление персоналом и отелями. Кроме того,
+управление отелями ограничено только просмотром.
 
-**Depends on: slice 001 being complete.**
+## Контекст
 
-## Scope
+Это фундаментальная задача EPIC 0.3 (Access Control & Admin) из roadmap.
+Без ролевой модели невозможно строить Phase 1: управление персоналом,
+тикетами и другими ресурсами потребует разграничения доступа.
+Зависит от slice 001 (auth-паттерн в `BaseController`).
 
-**In:**
-- Apply role check to `Admin::StaffController#index`:
-  `admin` role may access; `manager` and `staff` roles are denied
-- Add request specs for allowed/denied roles
+Роли `admin`, `manager`, `staff` уже существуют в системе.
 
-**Out:**
-- Staff CRUD (create, edit, delete)
-- Changes to `BaseController` or authentication mechanism (slice 001 owns that)
-- Securing hotels/tickets pages (slices 001, 003)
+## Для кого
 
-## Acceptance Criteria
+Административный раздел предназначен исключительно для роли `admin`. Сотрудники
+с ролями `manager` и `staff` не имеют к нему доступа — до появления их собственных
+разделов (отдельная фича) они перенаправляются на главную страницу (`/`).
 
-- [ ] Staff with role `admin` can access `GET /admin/staff`
-- [ ] Staff with role `manager` is denied (403 or redirect)
-- [ ] Staff with role `staff` is denied (403 or redirect)
-- [ ] Unauthenticated request is denied
-- [ ] Request specs cover all cases above
+## Ожидаемый результат
 
-## Open Questions
+- Роли `manager` и `staff` не могут попасть в административный раздел;
+  при попытке они получают 302-редирект на `/`
+- Роль `admin` имеет полный доступ к административному разделу
+- Администратор может просматривать список отелей, создавать новые,
+  редактировать и удалять существующие
+- Каждый отель имеет уникальный `slug` (строковый URL-идентификатор, например `grand-hyatt-moscow`); дубликаты недопустимы
+- Страница отеля (`/admin/hotels/:slug`) отображает информацию об отеле и содержит ссылки на список сотрудников и список тикетов
+- Список сотрудников отеля доступен по `/admin/hotels/:slug/staff`; карточка сотрудника — по `/admin/hotels/:slug/staff/:id`
+- Список тикетов отеля доступен по `/admin/hotels/:slug/tickets`
+- Все три вложенных раздела показывают данные только для указанного отеля
 
-- **Role rule:** should `manager` see a filtered staff list (own hotel only)
-  rather than being fully denied? Default assumption: `admin` only.
-  Confirm before implementing.
+## Ограничения
 
-## Key Files
+- Не менять auth-механизм (slice 001)
+- Без клиентской валидации и bulk-операций
+- Namespaces для ролей `manager` и `staff` — вне scope этой фичи
+- CRUD для staff и tickets — вне scope этой фичи, только просмотр списка и карточки
 
-| File | Change |
-|------|--------|
-| `app/controllers/admin/staff_controller.rb` | Add role check |
-| `spec/requests/admin/` | New or extended staff access spec |
+## Критерии успеха
 
-## Notes
-
-- Reuse the auth helpers and factory setup from slice 001 specs — do not
-  duplicate setup logic.
-- Role rule here may differ from Hotels (001) — staff listing is more sensitive
-  than hotel listing.
+- [ ] Роли `manager` и `staff` получают 302-редирект на `/` при обращении
+      к любому ресурсу в административном разделе
+- [ ] Роль `admin` имеет полный доступ к административному разделу
+- [ ] Попытка создать или обновить отель с уже существующим `slug` возвращает ошибку валидации на форме
+- [ ] Успешный create/update отеля — редирект на список отелей с `flash[:notice]`
+- [ ] Невалидные данные при create/update — повторный рендер формы с ошибками.
+      Невалидными считаются: отсутствие `name`, отсутствие `timezone`,
+      отсутствие или дублирование `slug`, `slug` содержит символы помимо строчных
+      латинских букв, цифр и дефиса
+- [ ] Попытка удалить отель со связанными записями не приводит к 500;
+      пользователь видит `flash[:alert]` с текстом «Hotel has associated records and cannot be deleted»
+      и остаётся на странице списка
+- [ ] `GET /admin/hotels/:slug/staff` возвращает только сотрудников указанного отеля
+- [ ] `GET /admin/hotels/:slug/staff/:id` возвращает карточку сотрудника; если сотрудник не принадлежит отелю — 404
+- [ ] `GET /admin/hotels/:slug/tickets` возвращает только тикеты указанного отеля
+- [ ] Обращение к несуществующему отелю возвращает 404
+- [ ] Request specs покрывают: success, validation failure, каждую роль
+      для каждого защищённого endpoint

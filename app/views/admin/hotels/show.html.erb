@@ -1,0 +1,22 @@
+<h1><%= @hotel.name %></h1>
+
+<dl>
+  <dt><%= t(".name") %></dt>
+  <dd><%= @hotel.name %></dd>
+
+  <dt><%= t(".timezone") %></dt>
+  <dd><%= @hotel.timezone %></dd>
+
+  <dt><%= t(".slug") %></dt>
+  <dd><%= @hotel.slug %></dd>
+</dl>
+
+<p>
+  <%= link_to t(".staff_link"), admin_hotel_staff_index_path(@hotel) %>
+  <%= link_to t(".tickets_link"), admin_hotel_tickets_path(@hotel) %>
+  <%= link_to t(".edit_link"), edit_admin_hotel_path(@hotel) %>
+  <%= button_to t(".delete_link"),
+                admin_hotel_path(@hotel),
+                method: :delete,
+                form: { data: { turbo_confirm: t("admin.confirm_delete") } } %>
+</p>

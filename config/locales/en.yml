@@ -30,6 +30,66 @@
 en:
   hello: "Hello world"
   admin:
-    hotels:
+    confirm_delete: "Are you sure?"
+    layout:
+      title: "Admin | Hotel Concierge Bot"
+      hotels: "Hotels"
+      staff: "Staff"
+      tickets: "Tickets"
+    hotel_staff:
       index:
-        empty: "No hotels found."
+        title: "Staff for %{hotel_name}"
+        empty: "No staff members for this hotel."
+        name: "Name"
+        email: "Email"
+        role: "Role"
+      show:
+        name: "Name"
+        email: "Email"
+        role: "Role"
+        hotel: "Hotel"
+    hotel_tickets:
+      index:
+        title: "Tickets for %{hotel_name}"
+        empty: "No tickets for this hotel."
+        unassigned: "Unassigned"
+        subject: "Subject"
+        body: "Body"
+        status: "Status"
+        priority: "Priority"
+        guest: "Guest"
+        department: "Department"
+        staff: "Staff"
+    hotels:
+      form:
+        timezone_blank: "Select timezone"
+      create:
+        success: "Hotel was successfully created."
+      update:
+        success: "Hotel was successfully updated."
+      destroy:
+        success: "Hotel was successfully deleted."
+        associated_records_exist: "Hotel has associated records and cannot be deleted."
+      index:
+        title: "Hotels"
+        empty: "No hotels yet."
+        name: "Name"
+        timezone: "Timezone"
+        created_at: "Created At"
+        actions: "Actions"
+        edit_link: "Edit"
+        delete_link: "Delete"
+      new:
+        title: "New Hotel"
+        submit: "Create Hotel"
+      edit:
+        title: "Edit Hotel"
+        submit: "Update Hotel"
+      show:
+        name: "Name"
+        timezone: "Timezone"
+        slug: "Slug"
+        staff_link: "Staff"
+        tickets_link: "Tickets"
+        edit_link: "Edit"
+        delete_link: "Delete"

@@ -3,6 +3,8 @@ require "rails_helper"
 RSpec.describe "Admin access" do
   let!(:hotel) { create(:hotel, name: "Aurora") }
   let!(:staff_member) { create(:staff, :admin, hotel: hotel) }
+  let!(:manager) { create(:staff, :manager, hotel: hotel) }
+  let!(:staff_user) { create(:staff, hotel: hotel) }
   let!(:department) { Department.create!(hotel: hotel, name: "Housekeeping") }
   let!(:guest) do
     Guest.create!(
@@ -13,10 +15,12 @@ RSpec.describe "Admin access" do
     )
   end
   let!(:ticket) do
-    Ticket.create!(
+    create(
+      :ticket,
+      hotel: hotel,
+      staff: staff_member,
       guest: guest,
       department: department,
-      staff: staff_member,
       status: :in_progress,
       priority: :high
     )
@@ -35,6 +39,18 @@ RSpec.describe "Admin access" do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Hotels", hotel.name)
     end
+
+    it "redirects manager to root" do
+      get admin_root_path, headers: authorization_header(manager)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "redirects staff to root" do
+      get admin_root_path, headers: authorization_header(staff_user)
+
+      expect(response).to redirect_to(root_path)
+    end
   end
 
   describe "GET /admin/staff" do
@@ -43,6 +59,18 @@ RSpec.describe "Admin access" do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(staff_member.name, staff_member.email)
+    end
+
+    it "redirects manager to root" do
+      get admin_staff_index_path, headers: authorization_header(manager)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "redirects staff to root" do
+      get admin_staff_index_path, headers: authorization_header(staff_user)
+
+      expect(response).to redirect_to(root_path)
     end
   end
 
@@ -53,10 +81,22 @@ RSpec.describe "Admin access" do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(guest.name, department.name, ticket.status, ticket.priority)
     end
+
+    it "redirects manager to root" do
+      get admin_tickets_path, headers: authorization_header(manager)
+
+      expect(response).to redirect_to(root_path)
+    end
+
+    it "redirects staff to root" do
+      get admin_tickets_path, headers: authorization_header(staff_user)
+
+      expect(response).to redirect_to(root_path)
+    end
   end
 
-  def authorization_header
-    encoded = Base64.strict_encode64("#{staff_member.email}:password")
+  def authorization_header(staff = staff_member)
+    encoded = Base64.strict_encode64("#{staff.email}:password")
     { "Authorization" => "Basic #{encoded}" }
   end
 end

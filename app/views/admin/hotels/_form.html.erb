@@ -1,0 +1,20 @@
+<%= render "shared/errors", object: hotel %>
+
+<%= form_with model: [:admin, hotel], url: url, method: form_method do |form| %>
+  <div>
+    <%= form.label :name %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :timezone %>
+    <%= form.time_zone_select :timezone,
+                              ActiveSupport::TimeZone.all,
+                              { include_blank: t("admin.hotels.form.timezone_blank") },
+                              { class: "form-control" } %>
+  </div>
+
+  <div>
+    <%= form.submit submit_text %>
+  </div>
+<% end %>

@@ -1,0 +1,7 @@
+<h1><%= t(".title") %></h1>
+
+<%= render "form",
+           hotel: @hotel,
+           url: admin_hotels_path,
+           form_method: :post,
+           submit_text: t(".submit") %>

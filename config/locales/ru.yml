@@ -1,5 +1,65 @@
 ru:
   admin:
-    hotels:
+    confirm_delete: "Вы уверены?"
+    layout:
+      title: "Админка | Hotel Concierge Bot"
+      hotels: "Отели"
+      staff: "Сотрудники"
+      tickets: "Тикеты"
+    hotel_staff:
       index:
-        empty: "Отели не найдены."
+        title: "Сотрудники отеля %{hotel_name}"
+        empty: "У этого отеля нет сотрудников."
+        name: "Имя"
+        email: "Email"
+        role: "Роль"
+      show:
+        name: "Имя"
+        email: "Email"
+        role: "Роль"
+        hotel: "Отель"
+    hotel_tickets:
+      index:
+        title: "Тикеты отеля %{hotel_name}"
+        empty: "У этого отеля нет тикетов."
+        unassigned: "Не назначен"
+        subject: "Тема"
+        body: "Описание"
+        status: "Статус"
+        priority: "Приоритет"
+        guest: "Гость"
+        department: "Отдел"
+        staff: "Сотрудник"
+    hotels:
+      form:
+        timezone_blank: "Выберите часовой пояс"
+      create:
+        success: "Отель успешно создан."
+      update:
+        success: "Отель успешно обновлен."
+      destroy:
+        success: "Отель успешно удален."
+        associated_records_exist: "У отеля есть связанные записи, поэтому его нельзя удалить."
+      index:
+        title: "Отели"
+        empty: "Отели не добавлены."
+        name: "Название"
+        timezone: "Часовой пояс"
+        created_at: "Создан"
+        actions: "Действия"
+        edit_link: "Редактировать"
+        delete_link: "Удалить"
+      new:
+        title: "Новый отель"
+        submit: "Создать отель"
+      edit:
+        title: "Редактировать отель"
+        submit: "Обновить отель"
+      show:
+        name: "Название"
+        timezone: "Часовой пояс"
+        slug: "Slug"
+        staff_link: "Сотрудники"
+        tickets_link: "Тикеты"
+        edit_link: "Редактировать"
+        delete_link: "Удалить"

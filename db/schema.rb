@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_10_103912) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_11_100300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -46,6 +46,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_10_103912) do
     t.string "timezone", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "slug", null: false
+    t.index ["name"], name: "index_hotels_on_name", unique: true
+    t.index ["slug"], name: "index_hotels_on_slug", unique: true
   end
 
   create_table "knowledge_base_articles", force: :cascade do |t|
@@ -87,8 +90,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_10_103912) do
     t.integer "priority", default: 1, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "hotel_id", null: false
+    t.string "subject", default: "", null: false
+    t.text "body", default: "", null: false
     t.index ["department_id"], name: "index_tickets_on_department_id"
     t.index ["guest_id"], name: "index_tickets_on_guest_id"
+    t.index ["hotel_id"], name: "index_tickets_on_hotel_id"
     t.index ["staff_id"], name: "index_tickets_on_staff_id"
   end
 
@@ -100,5 +107,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_10_103912) do
   add_foreign_key "staffs", "hotels"
   add_foreign_key "tickets", "departments"
   add_foreign_key "tickets", "guests"
+  add_foreign_key "tickets", "hotels"
   add_foreign_key "tickets", "staffs"
 end

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Admin | Hotel Concierge Bot</title>
+    <title><%= t("admin.layout.title") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -11,13 +11,21 @@
   <body>
     <header>
       <nav>
-        <%= link_to "Hotels", admin_hotels_path %> |
-        <%= link_to "Staff", admin_staff_index_path %> |
-        <%= link_to "Tickets", admin_tickets_path %>
+        <%= link_to t("admin.layout.hotels"), admin_hotels_path %> |
+        <%= link_to t("admin.layout.staff"), admin_staff_index_path %> |
+        <%= link_to t("admin.layout.tickets"), admin_tickets_path %>
       </nav>
     </header>
 
     <main>
+      <% if flash[:notice].present? %>
+        <p><%= flash[:notice] %></p>
+      <% end %>
+
+      <% if flash[:alert].present? %>
+        <p><%= flash[:alert] %></p>
+      <% end %>
+
       <%= yield %>
     </main>
   </body>

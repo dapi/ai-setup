@@ -3,11 +3,13 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 # Hotels
-grand_palace = Hotel.find_or_create_by!(name: "Grand Palace") do |h|
+grand_palace = Hotel.find_or_create_by!(slug: "grand-palace-slug") do |h|
+  h.name = "Grand Palace"
   h.timezone = "Europe/Moscow"
 end
 
-aurora = Hotel.find_or_create_by!(name: "Aurora") do |h|
+aurora = Hotel.find_or_create_by!(slug: "aurora-slug") do |h|
+  h.name = "Aurora"
   h.timezone = "Europe/London"
 end
 
@@ -93,16 +95,37 @@ KnowledgeBaseArticle.find_or_create_by!(hotel: aurora, title: "Wi-Fi Instruction
 end
 
 # Tickets
-ticket1 = Ticket.find_or_create_by!(guest: alice, department: housekeeping_gp, status: :new) do |t|
+ticket1 = Ticket.find_or_create_by!(
+  hotel: grand_palace,
+  guest: alice,
+  department: housekeeping_gp,
+  status: :new,
+  subject: "Extra towels",
+  body: "Please bring extra towels to room 101."
+) do |t|
   t.priority = :high
 end
 
-ticket2 = Ticket.find_or_create_by!(guest: bob, department: restaurant_gp, status: :in_progress) do |t|
+ticket2 = Ticket.find_or_create_by!(
+  hotel: grand_palace,
+  guest: bob,
+  department: restaurant_gp,
+  status: :in_progress,
+  subject: "Room service order",
+  body: "Please deliver dinner to room 202."
+) do |t|
   t.priority = :medium
   t.staff    = Staff.find_by(email: "staff@grandpalace.com")
 end
 
-ticket3 = Ticket.find_or_create_by!(guest: charlie, department: concierge_au, status: :done) do |t|
+ticket3 = Ticket.find_or_create_by!(
+  hotel: aurora,
+  guest: charlie,
+  department: concierge_au,
+  status: :done,
+  subject: "Taxi booking",
+  body: "Please arrange a taxi to the airport for tomorrow morning."
+) do |t|
   t.priority = :low
 end
 

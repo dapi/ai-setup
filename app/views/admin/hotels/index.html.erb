@@ -1,26 +1,36 @@
-<h1>Hotels</h1>
+<h1><%= t(".title") %></h1>
 
 <table>
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Timezone</th>
-      <th>Created At</th>
+      <th><%= t(".name") %></th>
+      <th><%= t(".timezone") %></th>
+      <th><%= t(".created_at") %></th>
+      <th><%= t(".actions") %></th>
     </tr>
   </thead>
   <tbody>
     <% if @hotels.empty? %>
       <tr>
-        <td colspan="3"><%= t("admin.hotels.index.empty") %></td>
+        <td colspan="4"><%= t("admin.hotels.index.empty") %></td>
       </tr>
     <% else %>
       <% @hotels.each do |hotel| %>
         <tr>
-          <td><%= hotel.name %></td>
+          <td><%= link_to hotel.name, admin_hotel_path(hotel) %></td>
           <td><%= hotel.timezone %></td>
           <td><%= l(hotel.created_at, format: :short) %></td>
+          <td>
+            <%= link_to t(".edit_link"), edit_admin_hotel_path(hotel) %>
+            <%= button_to t(".delete_link"),
+                          admin_hotel_path(hotel),
+                          method: :delete,
+                          form: { data: { turbo_confirm: t("admin.confirm_delete") } } %>
+          </td>
         </tr>
       <% end %>
     <% end %>
   </tbody>
 </table>
+
+<%= paginate @hotels %>

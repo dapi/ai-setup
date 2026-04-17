@@ -10,7 +10,11 @@ Rails.application.routes.draw do
   namespace :admin do
     root "hotels#index"
 
-    resources :hotels, only: :index
+    resources :hotels, param: :slug do
+      resources :staff, only: %i[index show], controller: "hotel_staff"
+      resources :tickets, only: :index, controller: "hotel_tickets"
+    end
+
     resources :staff, only: :index
     resources :tickets, only: :index
   end

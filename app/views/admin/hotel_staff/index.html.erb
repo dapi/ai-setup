@@ -1,0 +1,25 @@
+<h1><%= t(".title", hotel_name: @hotel.name) %></h1>
+
+<% if @staff.empty? %>
+  <p><%= t("admin.hotel_staff.index.empty") %></p>
+<% else %>
+  <table>
+    <thead>
+      <tr>
+        <th><%= t(".name") %></th>
+        <th><%= t(".email") %></th>
+        <th><%= t(".role") %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @staff.each do |staff_member| %>
+        <tr>
+          <td><%= link_to staff_member.name, admin_hotel_staff_path(@hotel, staff_member) %></td>
+          <td><%= staff_member.email %></td>
+          <td><%= staff_member.role %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <%= paginate @staff %>
+<% end %>
