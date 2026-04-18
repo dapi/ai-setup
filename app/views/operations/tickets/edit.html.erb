@@ -1,0 +1,25 @@
+<h1>Edit ticket <%= @ticket.id %></h1>
+
+<% if @result&.messages.present? %>
+  <ul>
+    <% @result.messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_with model: @ticket, url: operations_ticket_path(@ticket), method: :patch do |form| %>
+  <div>
+    <%= form.label :staff_id, "Staff" %>
+    <%= form.collection_select :staff_id, @assignees, :id, :name, include_blank: "Unassigned" %>
+  </div>
+
+  <div>
+    <%= form.label :status %>
+    <%= form.select :status, @statuses %>
+  </div>
+
+  <div>
+    <%= form.submit "Update ticket" %>
+  </div>
+<% end %>

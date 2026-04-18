@@ -1,0 +1,32 @@
+<h1>Tickets</h1>
+
+<% if @tickets.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Status</th>
+        <th>Department</th>
+        <th>Staff</th>
+        <% if current_staff.manager? %>
+          <th></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @tickets.each do |ticket| %>
+        <tr>
+          <td><%= link_to ticket.id, operations_ticket_path(ticket) %></td>
+          <td><%= ticket.status %></td>
+          <td><%= ticket.department.name %></td>
+          <td><%= ticket.staff&.name || "Unassigned" %></td>
+          <% if current_staff.manager? %>
+            <td><%= link_to "Edit", edit_operations_ticket_path(ticket) %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No tickets found</p>
+<% end %>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Operations</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  </head>
+
+  <body>
+    <header>
+      <nav>
+        <%= link_to "Tickets", operations_tickets_path %>
+
+        <% if current_staff.manager? %>
+          | <%= link_to "Staff", operations_staff_index_path %>
+        <% end %>
+      </nav>
+    </header>
+
+    <main>
+      <% if flash[:notice].present? %>
+        <p><%= flash[:notice] %></p>
+      <% end %>
+
+      <% if flash[:alert].present? %>
+        <p><%= flash[:alert] %></p>
+      <% end %>
+
+      <%= yield %>
+    </main>
+  </body>
+</html>

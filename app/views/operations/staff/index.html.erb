@@ -1,0 +1,26 @@
+<h1>Staff</h1>
+
+<p><%= link_to "New staff", new_operations_staff_path %></p>
+
+<% if @staff_members.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Department</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @staff_members.each do |staff_member| %>
+        <tr>
+          <td><%= staff_member.name %></td>
+          <td><%= staff_member.email %></td>
+          <td><%= staff_member.department.name %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No staff found</p>
+<% end %>

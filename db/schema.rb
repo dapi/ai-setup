@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_11_100300) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_18_155420) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -79,7 +79,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_100300) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "password_digest", null: false
+    t.bigint "department_id"
+    t.index ["department_id"], name: "index_staffs_on_department_id"
+    t.index ["email"], name: "index_staffs_on_email", unique: true
     t.index ["hotel_id"], name: "index_staffs_on_hotel_id"
+    t.check_constraint "role <> 2 OR department_id IS NOT NULL", name: "staff_role_requires_department"
   end
 
   create_table "tickets", force: :cascade do |t|
@@ -104,6 +108,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_11_100300) do
   add_foreign_key "guests", "hotels"
   add_foreign_key "knowledge_base_articles", "hotels"
   add_foreign_key "messages", "conversations"
+  add_foreign_key "staffs", "departments"
   add_foreign_key "staffs", "hotels"
   add_foreign_key "tickets", "departments"
   add_foreign_key "tickets", "guests"

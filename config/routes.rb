@@ -18,4 +18,16 @@ Rails.application.routes.draw do
     resources :staff, only: :index
     resources :tickets, only: :index
   end
+
+  namespace :operations do
+    root "home#index"
+
+    resources :staff, only: %i[index new create]
+    resources :tickets, only: %i[index show edit update] do
+      member do
+        patch :start
+        patch :complete
+      end
+    end
+  end
 end

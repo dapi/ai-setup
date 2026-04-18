@@ -31,6 +31,7 @@ RSpec.describe "Admin access" do
       get admin_root_path
 
       expect(response).to have_http_status(:unauthorized)
+      expect(response.headers["WWW-Authenticate"]).to eq('Basic realm="Admin"')
     end
 
     it "returns the hotels page with valid credentials" do

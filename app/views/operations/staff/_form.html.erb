@@ -1,0 +1,38 @@
+<% if @result&.messages.present? %>
+  <ul>
+    <% @result.messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_with model: staff_member, url: operations_staff_index_path do |form| %>
+  <div>
+    <%= form.label :name %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div>
+    <%= form.label :email %>
+    <%= form.email_field :email %>
+  </div>
+
+  <div>
+    <%= form.label :password %>
+    <%= form.password_field :password %>
+  </div>
+
+  <div>
+    <%= form.label :password_confirmation %>
+    <%= form.password_field :password_confirmation %>
+  </div>
+
+  <div>
+    <%= form.label :department_id, "Department" %>
+    <%= form.collection_select :department_id, departments, :id, :name, include_blank: true %>
+  </div>
+
+  <div>
+    <%= form.submit "Create staff" %>
+  </div>
+<% end %>

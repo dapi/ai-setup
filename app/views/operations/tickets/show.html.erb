@@ -1,0 +1,41 @@
+<h1>Ticket <%= @ticket.id %></h1>
+
+<% if @result&.messages.present? %>
+  <ul>
+    <% @result.messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<dl>
+  <dt>Status</dt>
+  <dd><%= @ticket.status %></dd>
+
+  <dt>Department</dt>
+  <dd><%= @ticket.department.name %></dd>
+
+  <dt>Staff</dt>
+  <dd><%= @ticket.staff&.name || "Unassigned" %></dd>
+
+  <dt>Subject</dt>
+  <dd><%= @ticket.subject %></dd>
+
+  <dt>Body</dt>
+  <dd><%= @ticket.body %></dd>
+
+  <dt>Priority</dt>
+  <dd><%= @ticket.priority %></dd>
+</dl>
+
+<% if current_staff.manager? %>
+  <p><%= link_to "Edit", edit_operations_ticket_path(@ticket) %></p>
+<% end %>
+
+<% if current_staff.staff? && @ticket.staff_id == current_staff.id && @ticket.new? %>
+  <%= button_to "Start", start_operations_ticket_path(@ticket), method: :patch %>
+<% end %>
+
+<% if current_staff.staff? && @ticket.staff_id == current_staff.id && @ticket.in_progress? %>
+  <%= button_to "Complete", complete_operations_ticket_path(@ticket), method: :patch %>
+<% end %>

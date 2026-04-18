@@ -36,12 +36,15 @@ Staff.find_or_create_by!(email: "manager@grandpalace.com") do |s|
   s.password = "password"
 end
 
-Staff.find_or_create_by!(email: "staff@grandpalace.com") do |s|
+grand_palace_staff = Staff.find_or_create_by!(email: "staff@grandpalace.com") do |s|
   s.hotel    = grand_palace
   s.name     = "Carol Staff"
   s.role     = :staff
   s.password = "password"
+  s.department = housekeeping_gp
 end
+grand_palace_staff.department ||= housekeeping_gp
+grand_palace_staff.save!
 
 Staff.find_or_create_by!(email: "admin@aurora.com") do |s|
   s.hotel    = aurora
