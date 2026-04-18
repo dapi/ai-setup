@@ -405,7 +405,7 @@ Response behavior:
 - form fields только для whitelisted params: `name`, `email`, `password`, `password_confirmation`, `department_id`
 - form отправляется на `operations_staff_index_path`
 - department select содержит только departments из manager hotel
-- validation summary выводит `result.messages`
+- validation summary выводит `@result.messages`, когда create action рендерит `new` со статусом `422`
 - не выводить fields для role или hotel
 
 ### Step 3.3 — Добавить request specs для staff create
@@ -524,7 +524,7 @@ Response behavior:
 - assignment select содержит только users с `role: :staff` из manager hotel
 - blank staff option разрешает unassignment
 - status select содержит только существующие enum statuses
-- validation summary выводит `result.messages`
+- validation summary выводит `@result.messages`, когда update action рендерит `edit` со статусом `422`
 - нет fields для guest, hotel, department, subject, body или priority
 
 ### Step 5.3 — Обновить manager controls в ticket index/show
